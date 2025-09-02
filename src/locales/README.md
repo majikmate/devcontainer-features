@@ -1,5 +1,5 @@
 
-# Update locales (locales)
+# Set locales (locales)
 
 A feature to set your preferred locales
 
@@ -15,6 +15,7 @@ A feature to set your preferred locales
 
 | Options Id | Description | Type | Default Value |
 |-----|-----|-----|-----|
+| timezone | Choose your preferred timezone. | string | Europe/Vienna |
 | lang | Choose your preferred language. | string | en-GB.UTF-8 |
 | time | Choose your preferred time format. | string | de_AT.UTF-8 |
 | numeric | Choose your preferred numeric format. | string | de_AT.UTF-8 |
