@@ -8,3 +8,4 @@ echo "rebase-autostash: ${REBASE_AUTOSTASH}"
 
 git config --global pull.rebase ${PULL_REBASE}
 git config --global rebase.autoStash ${REBASE_AUTOSTASH}
+git config --global --list
