@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
+set -x
 
 echo "Activating feature 'locales'"
 echo "============================"
