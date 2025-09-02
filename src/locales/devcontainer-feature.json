@@ -1,7 +1,7 @@
 {
     "name": "Set locales",
     "id": "locales",
-    "version": "1.2.0",
+    "version": "1.1.2",
     "description": "A feature to set your preferred locales",
     "options": {
         "timezone":{
@@ -9,7 +9,7 @@
             "default": "Europe/Vienna",
             "description": "Choose your preferred timezone."
         },
-        "language": {
+        "lang": {
             "type": "string",
             "default": "en_GB.UTF-8",
             "description": "Choose your preferred language."
