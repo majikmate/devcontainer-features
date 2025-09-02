@@ -1,0 +1,23 @@
+{
+    "name": "Update OS",
+    "id": "updateos",
+    "version": "1.0.0",
+    "description": "A feature to update the os",
+    "options": {
+        "atcreate": {
+            "type": "boolean",
+            "default": true,
+            "description": "Choose to update the os when a container is created or prebuilt."
+        },
+        "atstart": {
+            "type": "boolean",
+            "default": false,
+            "description": "Choose to update the os when a container is started."
+        }
+    },
+    "onCreateCommand": "/usr/local/share/majikmate-update-os-at-create",
+    "postStartCommand": "/usr/local/share/majikmate-update-os-at-start",
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}

@@ -1,0 +1,36 @@
+{
+    "name": "Update locales",
+    "id": "locales",
+    "version": "1.0.0",
+    "description": "A feature to set your preferred locales",
+    "options": {
+        "lang": {
+            "type": "string",
+            "default": "en-GB.UTF-8",
+            "description": "Choose your preferred language."
+        },
+        "time": {
+            "type": "string",
+            "default": "de_AT.UTF-8",
+            "description": "Choose your preferred time format."
+        },  
+        "numeric": {
+            "type": "string",
+            "default": "de_AT.UTF-8",
+            "description": "Choose your preferred numeric format."
+        },
+        "monetary": {
+            "type": "string",
+            "default": "de_AT.UTF-8",
+            "description": "Choose your preferred monetary format."
+        },
+        "measurement": {
+            "type": "string",
+            "default": "de_AT.UTF-8",
+            "description": "Choose your preferred measurement format."
+        }
+    },
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}
