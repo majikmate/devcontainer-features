@@ -43,7 +43,7 @@ echo "OS update at create skipped."
 EOF
 fi
 
-chmod +x /usr/local/share/majikmate-update-os-at-crate
+chmod +x /usr/local/share/majikmate-update-os-at-create
 
 
 # create the atstart script

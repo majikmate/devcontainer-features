@@ -42,7 +42,7 @@ ensure_locale "$MONETARY"
 ensure_locale "$MEASUREMENT"
 
 dpkg-reconfigure -f noninteractive locales
-update-locale LANG="$LANG" LC_TIME="$TIME" LC_NUMERIC="$NUMERIC" LC_MONETARY="$MONETARY" LC_MEASUREMENT="$MEASUREMENT"
+update-locale LANGUAGE="en_GB:en" LANG="${LANG}" LC_TIME="${TIME}" LC_NUMERIC="${NUMERIC}" LC_MONETARY="${MONETARY}" LC_MEASUREMENT="${MEASUREMENT}"
 
 ln -fs "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime
 dpkg-reconfigure -f noninteractive tzdata
