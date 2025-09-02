@@ -1,5 +1,8 @@
 name: "Release dev container features"
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -19,6 +22,6 @@ jobs:
           publish-features: "true"
           base-path-to-features: "./src"
           generate-docs: "false"
-          
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
