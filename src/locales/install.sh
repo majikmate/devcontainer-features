@@ -2,11 +2,20 @@
 set -e
 
 echo "Activating feature 'locales'"
+echo "============================"
+echo "timezone: ${TIMEZONE}"
 echo "language: ${LANG}"
 echo "time format: ${TIME}"
 echo "numeric format: ${NUMERIC}"
 echo "monetary format: ${MONETARY}"
 echo "measurement format: ${MEASUREMENT}"
+
+apt-get update
+apt-get install -y tzdata
+apt-get install -y locales
+
+ln -fs "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime
+dpkg-reconfigure -f noninteractive tzdata
 
 update-locale LANG="$LANG" LC_TIME="$TIME" LC_NUMERIC="$NUMERIC" LC_MONETARY="$MONETARY" LC_MEASUREMENT="$MEASUREMENT"
 

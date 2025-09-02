@@ -1,9 +1,14 @@
 {
-    "name": "Update locales",
+    "name": "Set locales",
     "id": "locales",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "A feature to set your preferred locales",
     "options": {
+        "timezone":{
+            "type": "string",
+            "default": "Europe/Vienna",
+            "description": "Choose your preferred timezone."
+        },
         "lang": {
             "type": "string",
             "default": "en-GB.UTF-8",
