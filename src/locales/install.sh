@@ -42,7 +42,25 @@ ensure_locale "$MONETARY"
 ensure_locale "$MEASUREMENT"
 
 dpkg-reconfigure -f noninteractive locales
-update-locale LANGUAGE="en_GB:en" LANG="${LANG}" LC_TIME="${TIME}" LC_NUMERIC="${NUMERIC}" LC_MONETARY="${MONETARY}" LC_MEASUREMENT="${MEASUREMENT}"
+
+# Construct the LANGUAGE variable from LANG, e.g., en_GB.UTF-8 -> en_GB:en
+LANG_UNDERSCORE=$(echo "$LANG" | sed 's/\.UTF-8//' | sed 's/-/_/')
+LANG_SHORT=$(echo "$LANG_UNDERSCORE" | cut -d'_' -f1)
+LANGUAGE_VALUE="${LANG_UNDERSCORE}:${LANG_SHORT}"
+
+update-locale LANG="${LANG}" LANGUAGE="${LANGUAGE_VALUE}" LC_TIME="${TIME}" LC_NUMERIC="${NUMERIC}" LC_MONETARY="${MONETARY}" LC_MEASUREMENT="${MEASUREMENT}"
+
+# Force sourcing of /etc/default/locale for the remoteUsers user's shell
+# add alias to the shells
+tee -a "${_REMOTE_USER_HOME}/.bashrc" "${_REMOTE_USER_HOME}/.zshrc" > /dev/null <<EOF
+# Load system-wide locale settings
+. /etc/default/locale
+
+# Set aliases
+alias ls="ls --color"
+alias ll="ls -la"
+alias vs="code -r ."
+EOF
 
 ln -fs "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime
 dpkg-reconfigure -f noninteractive tzdata

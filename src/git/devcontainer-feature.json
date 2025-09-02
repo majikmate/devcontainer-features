@@ -1,10 +1,10 @@
 {
     "name": "Setup git",
     "id": "git",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "A feature to set setup git",
     "options": {
-        "pull-rebase":{
+        "pull-rebase": {
             "type": "boolean",
             "default": true,
             "description": "Choose your preferred pull rebase setting."
