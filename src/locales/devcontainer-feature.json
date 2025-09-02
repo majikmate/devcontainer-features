@@ -9,7 +9,7 @@
             "default": "Europe/Vienna",
             "description": "Choose your preferred timezone."
         },
-        "lang": {
+        "language": {
             "type": "string",
             "default": "en_GB.UTF-8",
             "description": "Choose your preferred language."
