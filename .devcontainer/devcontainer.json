@@ -1,5 +1,5 @@
 {
-    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-20-bookworm",
+    "image": "ghcr.com/majikmate/classroom-codespace-image:1.2.14",
     "customizations": {
         "vscode": {
             "settings": {
@@ -20,6 +20,6 @@
     "features": {
         "ghcr.io/devcontainers/features/docker-in-docker:2": {}
     },
-    "remoteUser": "node",
+    "remoteUser": "vscode",
     "updateContentCommand": "npm install -g @devcontainers/cli"
 }
