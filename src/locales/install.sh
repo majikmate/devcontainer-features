@@ -54,7 +54,7 @@ update-locale LANG="${LANG}" LANGUAGE="${LANGUAGE_VALUE}" LC_TIME="${TIME}" LC_N
 # add alias to the shells
 tee -a "${_REMOTE_USER_HOME}/.bashrc" "${_REMOTE_USER_HOME}/.zshrc" > /dev/null <<EOF
 # Load system-wide locale settings
-. /etc/default/locale
+export $(grep -v '^#' /etc/default/locale | xargs)
 
 # Set aliases
 alias ls="ls --color"
