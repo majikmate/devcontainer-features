@@ -13,6 +13,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: "Generate documentation"
+        uses: devcontainers/action@v1
+        with:   
+          publish-features: "false"
+          base-path-to-features: "./src"
+          generate-docs: "true"
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
       - name: Create PR for Documentation
         id: push_image_info
         env:
