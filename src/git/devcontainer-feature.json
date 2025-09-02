@@ -1,0 +1,21 @@
+{
+    "name": "Setup git",
+    "id": "git",
+    "version": "1.0.0",
+    "description": "A feature to set setup git",
+    "options": {
+        "pull-rebase":{
+            "type": "boolean",
+            "default": true,
+            "description": "Choose your preferred pull rebase setting."
+        },
+        "rebase-autostash": {
+            "type": "boolean",
+            "default": true,
+            "description": "Choose your preferred rebase autostash setting."
+        }
+    },
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}
