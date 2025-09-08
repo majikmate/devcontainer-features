@@ -1,7 +1,7 @@
 {
     "name": "Setup gh cli extensions",
     "id": "gh-cli-extensions",
-    "version": "1.0.2",
+    "version": "1.0.0",
     "description": "A feature to install gh cli extensions",
     "options": {
         "gh-mmc": {
