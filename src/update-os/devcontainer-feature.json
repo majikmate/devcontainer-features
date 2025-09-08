@@ -1,7 +1,7 @@
 {
     "name": "Update OS",
-    "id": "updateos",
-    "version": "1.0.2",
+    "id": "update-os",
+    "version": "1.0.0",
     "description": "A feature to update the os",
     "options": {
         "atcreate": {
