@@ -1,0 +1,16 @@
+{
+    "name": "Setup gh cli extensions",
+    "id": "gh-cli-extensions",
+    "version": "1.0.2",
+    "description": "A feature to install gh cli extensions",
+    "options": {
+        "gh-mmc": {
+            "type": "boolean",
+            "default": true,
+            "description": "install gh-mmc cli extension"
+        }
+    },
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/github-cli"
+    ]
+}
