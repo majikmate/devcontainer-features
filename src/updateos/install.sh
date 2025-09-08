@@ -61,3 +61,8 @@ fi
 
 chmod +x /usr/local/share/majikmate-update-os-at-start
 
+
+# create the atcreate script
+if [ "${ATCREATE}" = "true" ]; then
+	/usr/local/share/majikmate-update-os
+fi
