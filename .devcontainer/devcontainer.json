@@ -1,5 +1,5 @@
 {
-    "image": "ghcr.io/majikmate/classroom-codespace-image:1.2.14",
+    "image": "ghcr.io/majikmate/classroom-codespace-image:latest",
     "customizations": {
         "vscode": {
             "settings": {
