@@ -7,7 +7,7 @@ A feature to update the os
 
 ```json
 "features": {
-    "ghcr.io/majikmate/classroom-codespace-feature/update-os:1": {}
+    "ghcr.io/majikmate/devcontainer-features/update-os:1": {}
 }
 ```
 
@@ -22,4 +22,4 @@ A feature to update the os
 
 ---
 
-_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/majikmate/classroom-codespace-feature/blob/main/src/update-os/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._
+_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/majikmate/devcontainer-features/blob/main/src/update-os/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._

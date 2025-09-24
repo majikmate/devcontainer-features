@@ -7,7 +7,7 @@ A feature to set setup git
 
 ```json
 "features": {
-    "ghcr.io/majikmate/classroom-codespace-feature/git:1": {}
+    "ghcr.io/majikmate/devcontainer-features/git:1": {}
 }
 ```
 
@@ -22,4 +22,4 @@ A feature to set setup git
 
 ---
 
-_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/majikmate/classroom-codespace-feature/blob/main/src/git/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._
+_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/majikmate/devcontainer-features/blob/main/src/git/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._
