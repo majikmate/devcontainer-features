@@ -1,5 +1,5 @@
 {
-    "image": "ghcr.io/majikmate/classroom-codespace-image:latest",
+    "image": "ghcr.io/majikmate/devcontainer-dev:latest",
     "customizations": {
         "vscode": {
             "settings": {
