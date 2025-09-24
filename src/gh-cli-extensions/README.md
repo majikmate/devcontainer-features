@@ -7,7 +7,7 @@ A feature to install gh cli extensions
 
 ```json
 "features": {
-    "ghcr.io/majikmate/classroom-codespace-feature/gh-cli-extensions:1": {}
+    "ghcr.io/majikmate/devcontainer-features/gh-cli-extensions:1": {}
 }
 ```
 
@@ -21,4 +21,4 @@ A feature to install gh cli extensions
 
 ---
 
-_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/majikmate/classroom-codespace-feature/blob/main/src/gh-cli-extensions/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._
+_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/majikmate/devcontainer-features/blob/main/src/gh-cli-extensions/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._

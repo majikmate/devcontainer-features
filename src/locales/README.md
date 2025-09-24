@@ -7,7 +7,7 @@ A feature to set your preferred locales
 
 ```json
 "features": {
-    "ghcr.io/majikmate/classroom-codespace-feature/locales:1": {}
+    "ghcr.io/majikmate/devcontainer-features/locales:1": {}
 }
 ```
 
@@ -26,4 +26,4 @@ A feature to set your preferred locales
 
 ---
 
-_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/majikmate/classroom-codespace-feature/blob/main/src/locales/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._
+_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/majikmate/devcontainer-features/blob/main/src/locales/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._
