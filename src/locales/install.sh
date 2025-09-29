@@ -10,12 +10,6 @@ echo "numeric format: ${NUMERIC}"
 echo "monetary format: ${MONETARY}"
 echo "measurement format: ${MEASUREMENT}"
 
-echo "The effective dev container remoteUser is '$_REMOTE_USER'"
-echo "The effective dev container remoteUser's home directory is '$_REMOTE_USER_HOME'"
-
-echo "The effective dev container containerUser is '$_CONTAINER_USER'"
-echo "The effective dev container containerUser's home directory is '$_CONTAINER_USER_HOME'"
-
 apt-get update
 apt-get install -y tzdata
 apt-get install -y locales
@@ -56,30 +50,75 @@ LANGUAGE_VALUE="${LANG_UNDERSCORE}:${LANG_SHORT}"
 
 update-locale LANG="${LANG}" LANGUAGE="${LANGUAGE_VALUE}" LC_TIME="${TIME}" LC_NUMERIC="${NUMERIC}" LC_MONETARY="${MONETARY}" LC_MEASUREMENT="${MEASUREMENT}"
 
+# Resolve users
+REMOTE_USER="${_REMOTE_USER:-$(id -un 2>/dev/null || true)}"
+CONTAINER_USER="${_CONTAINER_USER:-root}"
+
+# Try to resolve remote user home from the env var, passwd, or a sane default
+resolve_home() {
+    u="$1"
+    h="${2:-}"
+    if [ -n "$h" ]; then
+        printf '%s' "$h"; return 0
+    fi
+    # If user exists in /etc/passwd, use its home
+    if getent passwd "$u" >/dev/null 2>&1; then
+        getent passwd "$u" | cut -d: -f6
+        return 0
+    fi
+    # Common default
+    if [ -d "/home/$u" ]; then
+        printf '/home/%s' "$u"; return 0
+    fi
+    # Last resort (build-time before user exists)
+    printf '%s' "${_CONTAINER_USER_HOME:-/root}"
+}
+
+REMOTE_USER_HOME="$(resolve_home "$REMOTE_USER" "${_REMOTE_USER_HOME:-}")"
+CONTAINER_USER_HOME="$(resolve_home "$CONTAINER_USER" "${_CONTAINER_USER_HOME:-}")"
+
+echo "The effective dev container remoteUser is '${REMOTE_USER}'"
+echo "The effective dev container remoteUser's home directory is '${REMOTE_USER_HOME}'"
+echo "The effective dev container containerUser is '${CONTAINER_USER}'"
+echo "The effective dev container containerUser's home directory is '${CONTAINER_USER_HOME}'"
+
 # Force sourcing of /etc/default/locale for the remoteUser's shell
 
 # Add locale export to shell configuration files
-echo "Adding locale configuration to the remoteUser's shell configuration files"
+echo "Adding locale configuration to shell configuration files"
 
 # Prepare locale content to add
-LOCALE_CONFIG='# Load system-wide locale settings
-export $(grep -v '"'"'^#'"'"' /etc/default/locale | xargs)'
+LOCALE_CONFIG="# Load system-wide locale settings\nexport \$(grep -v '^#' /etc/default/locale | xargs)"
 
-# Add to .bashrc if it exists
-if [ -f "${_REMOTE_USER_HOME}/.bashrc" ]; then
-    echo "Adding locale configuration to ${_REMOTE_USER_HOME}/.bashrc"
-    echo "$LOCALE_CONFIG" >> "${_REMOTE_USER_HOME}/.bashrc"
-else
-    echo "${_REMOTE_USER_HOME}/.bashrc not found, skipping"
+append_if_exists() {
+    target="$1"
+    if [ -f "$target" ]; then
+        echo "Adding locale configuration to $target"
+        [ -n "$LOCALE_CONFIG" ] && printf "%b\n" "$LOCALE_CONFIG" >> "$target"
+    else
+        echo "$target not found, skipping"
+    fi
+}
+
+# Prefer drop-in files that work even before the user exists
+# Bash (Debian/Ubuntu): /etc/profile.d
+if [ -n "$LOCALE_CONFIG" ]; then
+    echo "Installing shell-agnostic locale snippets"
+    printf "%b\n" "$LOCALE_CONFIG" > /etc/profile.d/99-locales.sh
+    chmod 0644 /etc/profile.d/99-locales.sh
+
+    # Zsh global config locations (use ones that exist)
+    if [ -d /etc/zsh/zshrc.d ]; then
+        printf "%b\n" "$LOCALE_CONFIG" > /etc/zsh/zshrc.d/99-locales.zsh
+        chmod 0644 /etc/zsh/zshrc.d/99-locales.zsh
+    elif [ -f /etc/zsh/zshrc ]; then
+        printf "\n%b\n" "$LOCALE_CONFIG" >> /etc/zsh/zshrc
+    fi
 fi
 
-# Add to .zshrc if it exists
-if [ -f "${_REMOTE_USER_HOME}/.zshrc" ]; then
-    echo "Adding locale configuration to ${_REMOTE_USER_HOME}/.zshrc"
-    echo "$LOCALE_CONFIG" >> "${_REMOTE_USER_HOME}/.zshrc"
-else
-    echo "${_REMOTE_USER_HOME}/.zshrc not found, skipping"
-fi
+# Also try per-user shells if the home exists at this point
+append_if_exists "${REMOTE_USER_HOME}/.bashrc"
+append_if_exists "${REMOTE_USER_HOME}/.zshrc"
 
 ln -fs "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime
 dpkg-reconfigure -f noninteractive tzdata

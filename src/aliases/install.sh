@@ -5,56 +5,82 @@ echo "Activating feature 'aliases'"
 echo "============================"
 echo "aliases: ${ALIASES}"
 
-echo "The effective dev container remoteUser is '$_REMOTE_USER'"
-echo "The effective dev container remoteUser's home directory is '$_REMOTE_USER_HOME'"
+# Resolve users
+REMOTE_USER="${_REMOTE_USER:-$(id -un 2>/dev/null || true)}"
+CONTAINER_USER="${_CONTAINER_USER:-root}"
 
-echo "The effective dev container containerUser is '$_CONTAINER_USER'"
-echo "The effective dev container containerUser's home directory is '$_CONTAINER_USER_HOME'"
-
-# Parse the comma-separated aliases string and create alias commands
-parse_aliases() {
-    if [ -z "$ALIASES" ]; then
-        echo "No aliases provided, skipping."
+# Try to resolve remote user home from the env var, passwd, or a sane default
+resolve_home() {
+    u="$1"
+    h="${2:-}"
+    if [ -n "$h" ]; then
+        printf '%s' "$h"; return 0
+    fi
+    # If user exists in /etc/passwd, use its home
+    if getent passwd "$u" >/dev/null 2>&1; then
+        getent passwd "$u" | cut -d: -f6
         return 0
     fi
-    
-    # Split the aliases string by comma and process each alias
+    # Common default
+    if [ -d "/home/$u" ]; then
+        printf '/home/%s' "$u"; return 0
+    fi
+    # Last resort (build-time before user exists)
+    printf '%s' "${_CONTAINER_USER_HOME:-/root}"
+}
+
+REMOTE_USER_HOME="$(resolve_home "$REMOTE_USER" "${_REMOTE_USER_HOME:-}")"
+CONTAINER_USER_HOME="$(resolve_home "$CONTAINER_USER" "${_CONTAINER_USER_HOME:-}")"
+
+echo "The effective dev container remoteUser is '${REMOTE_USER}'"
+echo "The effective dev container remoteUser's home directory is '${REMOTE_USER_HOME}'"
+echo "The effective dev container containerUser is '${CONTAINER_USER}'"
+echo "The effective dev container containerUser's home directory is '${CONTAINER_USER_HOME}'"
+
+# Parse aliases
+parse_aliases() {
+    [ -z "$ALIASES" ] && { echo "No aliases provided, skipping."; return 0; }
     echo "$ALIASES" | tr ',' '\n' | while IFS='=' read -r alias_name alias_command; do
-        # Trim all kinds of leading and trailing whitespace (spaces, tabs, newlines, etc.)
         alias_name=$(printf '%s' "$alias_name" | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
         alias_command=$(printf '%s' "$alias_command" | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
-        
-        if [ -n "$alias_name" ] && [ -n "$alias_command" ]; then
-            echo "alias $alias_name=\"$alias_command\""
-        fi
+        [ -n "$alias_name" ] && [ -n "$alias_command" ] && \
+          printf 'alias %s="%s"\n' "$alias_name" "$alias_command"
     done
 }
 
-# Generate the alias configuration
 ALIAS_CONFIG=""
 if [ -n "$ALIASES" ]; then
-    ALIAS_CONFIG="# Custom aliases
-$(parse_aliases)"
+    ALIAS_CONFIG="# Custom aliases\n$(parse_aliases)"
 fi
 
-# Add aliases to .bashrc if it exists
-if [ -f "${_REMOTE_USER_HOME}/.bashrc" ]; then
-    echo "Adding aliases to ${_REMOTE_USER_HOME}/.bashrc"
-    if [ -n "$ALIAS_CONFIG" ]; then
-        echo "$ALIAS_CONFIG" >> "${_REMOTE_USER_HOME}/.bashrc"
+append_if_exists() {
+    target="$1"
+    if [ -f "$target" ]; then
+        echo "Adding aliases to $target"
+        [ -n "$ALIAS_CONFIG" ] && printf "%b\n" "$ALIAS_CONFIG" >> "$target"
+    else
+        echo "$target not found, skipping"
     fi
-else
-    echo "${_REMOTE_USER_HOME}/.bashrc not found, skipping"
+}
+
+# Prefer drop-in files that work even before the user exists
+# Bash (Debian/Ubuntu): /etc/profile.d
+if [ -n "$ALIAS_CONFIG" ]; then
+    echo "Installing shell-agnostic alias snippets"
+    printf "%b\n" "$ALIAS_CONFIG" > /etc/profile.d/99-aliases.sh
+    chmod 0644 /etc/profile.d/99-aliases.sh
+
+    # Zsh global config locations (use ones that exist)
+    if [ -d /etc/zsh/zshrc.d ]; then
+        printf "%b\n" "$ALIAS_CONFIG" > /etc/zsh/zshrc.d/99-aliases.zsh
+        chmod 0644 /etc/zsh/zshrc.d/99-aliases.zsh
+    elif [ -f /etc/zsh/zshrc ]; then
+        printf "\n%b\n" "$ALIAS_CONFIG" >> /etc/zsh/zshrc
+    fi
 fi
 
-# Add aliases to .zshrc if it exists
-if [ -f "${_REMOTE_USER_HOME}/.zshrc" ]; then
-    echo "Adding aliases to ${_REMOTE_USER_HOME}/.zshrc"
-    if [ -n "$ALIAS_CONFIG" ]; then
-        echo "$ALIAS_CONFIG" >> "${_REMOTE_USER_HOME}/.zshrc"
-    fi
-else
-    echo "${_REMOTE_USER_HOME}/.zshrc not found, skipping"
-fi
+# Also try per-user shells if the home exists at this point
+append_if_exists "${REMOTE_USER_HOME}/.bashrc"
+append_if_exists "${REMOTE_USER_HOME}/.zshrc"
 
 echo "Aliases feature installation completed."
