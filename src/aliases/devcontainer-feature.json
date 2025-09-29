@@ -1,0 +1,16 @@
+{
+    "name": "Set aliases",
+    "id": "aliases",
+    "version": "1.0.0",
+    "description": "A feature to set custom shell aliases",
+    "options": {
+        "aliases": {
+            "type": "string",
+            "default": "ls=ls --color,ll=ls --color -la,vs=code -r .",
+            "description": "Comma-separated list of aliases in format 'alias=command'"
+        }
+    },
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}

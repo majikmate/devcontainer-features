@@ -1,7 +1,7 @@
 {
     "name": "Set locales",
     "id": "locales",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "A feature to set your preferred locales",
     "options": {
         "timezone": {

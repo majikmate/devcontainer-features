@@ -10,6 +10,12 @@ echo "numeric format: ${NUMERIC}"
 echo "monetary format: ${MONETARY}"
 echo "measurement format: ${MEASUREMENT}"
 
+echo "The effective dev container remoteUser is '$_REMOTE_USER'"
+echo "The effective dev container remoteUser's home directory is '$_REMOTE_USER_HOME'"
+
+echo "The effective dev container containerUser is '$_CONTAINER_USER'"
+echo "The effective dev container containerUser's home directory is '$_CONTAINER_USER_HOME'"
+
 apt-get update
 apt-get install -y tzdata
 apt-get install -y locales
@@ -50,30 +56,30 @@ LANGUAGE_VALUE="${LANG_UNDERSCORE}:${LANG_SHORT}"
 
 update-locale LANG="${LANG}" LANGUAGE="${LANGUAGE_VALUE}" LC_TIME="${TIME}" LC_NUMERIC="${NUMERIC}" LC_MONETARY="${MONETARY}" LC_MEASUREMENT="${MEASUREMENT}"
 
-# Force sourcing of /etc/default/locale for the remoteUsers user's shell
-# add alias to the shells
-tee -a "${_REMOTE_USER_HOME}/.bashrc" "${_REMOTE_USER_HOME}/.zshrc" > /dev/null <<EOF
-# Load system-wide locale settings
-export $(grep -v '^#' /etc/default/locale | xargs)
+# Force sourcing of /etc/default/locale for the remoteUser's shell
 
-# Set aliases
-alias ls="ls --color"
-alias ll="ls -la"
-alias vs="code -r ."
-EOF
+# Add locale export to shell configuration files
+echo "Adding locale configuration to the remoteUser's shell configuration files"
+
+# Prepare locale content to add
+LOCALE_CONFIG='# Load system-wide locale settings
+export $(grep -v '"'"'^#'"'"' /etc/default/locale | xargs)'
+
+# Add to .bashrc if it exists
+if [ -f "${_REMOTE_USER_HOME}/.bashrc" ]; then
+    echo "Adding locale configuration to ${_REMOTE_USER_HOME}/.bashrc"
+    echo "$LOCALE_CONFIG" >> "${_REMOTE_USER_HOME}/.bashrc"
+else
+    echo "${_REMOTE_USER_HOME}/.bashrc not found, skipping"
+fi
+
+# Add to .zshrc if it exists
+if [ -f "${_REMOTE_USER_HOME}/.zshrc" ]; then
+    echo "Adding locale configuration to ${_REMOTE_USER_HOME}/.zshrc"
+    echo "$LOCALE_CONFIG" >> "${_REMOTE_USER_HOME}/.zshrc"
+else
+    echo "${_REMOTE_USER_HOME}/.zshrc not found, skipping"
+fi
 
 ln -fs "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime
 dpkg-reconfigure -f noninteractive tzdata
-
-# The 'install.sh' entrypoint script is always executed as the root user.
-#
-# These following environment variables are passed in by the dev container CLI.
-# These may be useful in instances where the context of the final 
-# remoteUser or containerUser is useful.
-# For more details, see https://containers.dev/implementors/features#user-env-var
-
-# echo "The effective dev container remoteUser is '$_REMOTE_USER'"
-# echo "The effective dev container remoteUser's home directory is '$_REMOTE_USER_HOME'"
-
-# echo "The effective dev container containerUser is '$_CONTAINER_USER'"
-# echo "The effective dev container containerUser's home directory is '$_CONTAINER_USER_HOME'"
