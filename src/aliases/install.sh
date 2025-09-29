@@ -21,6 +21,10 @@ parse_aliases() {
     
     # Split the aliases string by comma and process each alias
     echo "$ALIASES" | tr ',' '\n' | while IFS='=' read -r alias_name alias_command; do
+        # Trim all kinds of leading and trailing whitespace (spaces, tabs, newlines, etc.)
+        alias_name=$(printf '%s' "$alias_name" | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
+        alias_command=$(printf '%s' "$alias_command" | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
+        
         if [ -n "$alias_name" ] && [ -n "$alias_command" ]; then
             echo "alias $alias_name=\"$alias_command\""
         fi
