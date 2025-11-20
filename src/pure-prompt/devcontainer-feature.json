@@ -1,7 +1,7 @@
 {
     "name": "Pure Prompt",
     "id": "pure-prompt",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Install Pure prompt for zsh - a minimal and elegant prompt",
     "options": {
         "autoUpdate": {

@@ -42,27 +42,28 @@ install_pure() {
     user_home="$1"
     user_name="$2"
     
-    # Create directory for Pure prompt
-    mkdir -p "$user_home/.pure"
+    # Create directory for Pure prompt functions
+    pure_dir="$user_home/.zsh-pure"
+    mkdir -p "$pure_dir"
     
     # Download Pure prompt files
-    echo "Installing Pure prompt to $user_home/.pure"
+    echo "Installing Pure prompt to $pure_dir"
     
-    # Download pure.zsh
+    # Download pure.zsh as prompt_pure_setup (standard prompt function name)
     curl -fsSL https://raw.githubusercontent.com/sindresorhus/pure/main/pure.zsh \
-        -o "$user_home/.pure/pure.zsh"
+        -o "$pure_dir/prompt_pure_setup"
     
     # Download async.zsh
     curl -fsSL https://raw.githubusercontent.com/sindresorhus/pure/main/async.zsh \
-        -o "$user_home/.pure/async.zsh"
+        -o "$pure_dir/async"
     
     # Set proper ownership and permissions
     if [ "$user_name" != "root" ]; then
-        chown -R "$user_name:$user_name" "$user_home/.pure" 2>/dev/null || true
+        chown -R "$user_name:$user_name" "$pure_dir" 2>/dev/null || true
     fi
-    chmod 755 "$user_home/.pure"
-    chmod 644 "$user_home/.pure/pure.zsh"
-    chmod 644 "$user_home/.pure/async.zsh"
+    chmod 755 "$pure_dir"
+    chmod 644 "$pure_dir/prompt_pure_setup"
+    chmod 644 "$pure_dir/async"
     
     echo "Pure prompt installed successfully"
 }
@@ -90,17 +91,22 @@ configure_zshrc() {
     
     cat >> "$zshrc_file" <<'EOF'
 
-# Pure prompt configuration
-fpath+=("$HOME/.pure")
+# ============================================================================
+# SHELL PROMPT
+# ============================================================================
+# Add Pure prompt to fpath
+fpath+=("$HOME/.zsh-pure")
 
 # Initialize prompt system
 autoload -U promptinit; promptinit
 
-# Load async library
-source "$HOME/.pure/async.zsh"
+# Pure prompt configuration
+zstyle :prompt:pure:user show yes
+zstyle :prompt:pure:host show yes
+zstyle :prompt:pure:git:stash show yes
 
-# Load and apply Pure prompt
-source "$HOME/.pure/pure.zsh"
+# Load Pure prompt
+prompt pure
 EOF
 
     # Set proper ownership
@@ -115,9 +121,9 @@ EOF
 # Auto-update Pure prompt
 function update_pure_prompt() {
     curl -fsSL https://raw.githubusercontent.com/sindresorhus/pure/main/pure.zsh \
-        -o "$HOME/.pure/pure.zsh"
+        -o "$HOME/.zsh-pure/prompt_pure_setup"
     curl -fsSL https://raw.githubusercontent.com/sindresorhus/pure/main/async.zsh \
-        -o "$HOME/.pure/async.zsh"
+        -o "$HOME/.zsh-pure/async"
 }
 EOF
     fi
