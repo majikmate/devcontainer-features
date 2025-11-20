@@ -24,6 +24,7 @@ To use a feature, add it to your `devcontainer.json` file:
 | [gh-cli-extensions](./src/gh-cli-extensions) | Setup gh cli extensions | A feature to install gh cli extensions |
 | [git](./src/git) | Setup git | A feature to set setup git |
 | [locales](./src/locales) | Set locales | A feature to set your preferred locales |
+| [pure-prompt](./src/pure-prompt) | Pure Prompt | Install Pure prompt for zsh - a minimal and elegant prompt |
 | [update-os](./src/update-os) | Update OS | A feature to update the os |
 
 ## Examples
@@ -37,6 +38,7 @@ To use a feature, add it to your `devcontainer.json` file:
         "ghcr.io/majikmate/devcontainer-features/gh-cli-extensions:1": {},
         "ghcr.io/majikmate/devcontainer-features/git:1": {},
         "ghcr.io/majikmate/devcontainer-features/locales:1": {},
+        "ghcr.io/majikmate/devcontainer-features/pure-prompt:1": {},
         "ghcr.io/majikmate/devcontainer-features/update-os:1": {}
     }
 }
@@ -60,6 +62,9 @@ To use a feature, add it to your `devcontainer.json` file:
         "ghcr.io/majikmate/devcontainer-features/locales:1": {
             "lang": "en_GB.UTF-8",
             "measurement": "de_AT.UTF-8"
+        },
+        "ghcr.io/majikmate/devcontainer-features/pure-prompt:1": {
+            "autoUpdate": "true"
         },
         "ghcr.io/majikmate/devcontainer-features/update-os:1": {
             "atcreate": "true",
