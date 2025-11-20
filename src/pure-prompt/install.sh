@@ -40,6 +40,7 @@ echo "The effective dev container containerUser's home directory is '${CONTAINER
 # Install Pure prompt for the remote user
 install_pure() {
     user_home="$1"
+    user_name="$2"
     
     # Create directory for Pure prompt
     mkdir -p "$user_home/.pure"
@@ -55,7 +56,11 @@ install_pure() {
     curl -fsSL https://raw.githubusercontent.com/sindresorhus/pure/main/async.zsh \
         -o "$user_home/.pure/async.zsh"
     
-    # Set proper permissions
+    # Set proper ownership and permissions
+    if [ "$user_name" != "root" ]; then
+        chown -R "$user_name:$user_name" "$user_home/.pure" 2>/dev/null || true
+    fi
+    chmod 755 "$user_home/.pure"
     chmod 644 "$user_home/.pure/pure.zsh"
     chmod 644 "$user_home/.pure/async.zsh"
     
@@ -65,14 +70,18 @@ install_pure() {
 # Configure Pure prompt in zshrc
 configure_zshrc() {
     zshrc_file="$1"
+    user_name="$2"
     
     if [ ! -f "$zshrc_file" ]; then
         echo "$zshrc_file not found, creating it"
         touch "$zshrc_file"
+        if [ "$user_name" != "root" ]; then
+            chown "$user_name:$user_name" "$zshrc_file" 2>/dev/null || true
+        fi
     fi
     
     # Check if Pure is already configured
-    if grep -q "prompt_pure_setup" "$zshrc_file"; then
+    if grep -q "# Pure prompt configuration" "$zshrc_file"; then
         echo "Pure prompt already configured in $zshrc_file"
         return 0
     fi
@@ -82,10 +91,22 @@ configure_zshrc() {
     cat >> "$zshrc_file" <<'EOF'
 
 # Pure prompt configuration
-fpath+=($HOME/.pure)
-autoload -Uz promptinit; promptinit
-autoload -Uz pure; prompt pure
+fpath+=("$HOME/.pure")
+
+# Initialize prompt system
+autoload -U promptinit; promptinit
+
+# Load async library
+source "$HOME/.pure/async.zsh"
+
+# Load and apply Pure prompt
+source "$HOME/.pure/pure.zsh"
 EOF
+
+    # Set proper ownership
+    if [ "$user_name" != "root" ]; then
+        chown "$user_name:$user_name" "$zshrc_file" 2>/dev/null || true
+    fi
 
     # Add auto-update configuration if enabled
     if [ "$AUTOUPDATE" = "true" ]; then
@@ -104,14 +125,14 @@ EOF
 
 # Install Pure for remote user
 if [ -n "$REMOTE_USER_HOME" ]; then
-    install_pure "$REMOTE_USER_HOME"
-    configure_zshrc "$REMOTE_USER_HOME/.zshrc"
+    install_pure "$REMOTE_USER_HOME" "$REMOTE_USER"
+    configure_zshrc "$REMOTE_USER_HOME/.zshrc" "$REMOTE_USER"
 fi
 
 # Also configure for container user if different
 if [ "$CONTAINER_USER" != "$REMOTE_USER" ] && [ -n "$CONTAINER_USER_HOME" ]; then
-    install_pure "$CONTAINER_USER_HOME"
-    configure_zshrc "$CONTAINER_USER_HOME/.zshrc"
+    install_pure "$CONTAINER_USER_HOME" "$CONTAINER_USER"
+    configure_zshrc "$CONTAINER_USER_HOME/.zshrc" "$CONTAINER_USER"
 fi
 
 echo "Pure prompt feature installation completed."
