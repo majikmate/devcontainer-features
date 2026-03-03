@@ -1,0 +1,16 @@
+{
+    "name": "Playwright Browser Dependencies",
+    "id": "playwright-deps",
+    "version": "1.0.0",
+    "description": "Install Playwright browser dependencies without installing Playwright itself. Installs native libraries required for Chromium, Firefox, and WebKit browsers.",
+    "options": {
+        "browsers": {
+            "type": "string",
+            "default": "chromium firefox webkit",
+            "description": "Space-separated list of browsers to install dependencies for (chromium, firefox, webkit, or 'all')"
+        }
+    },
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}

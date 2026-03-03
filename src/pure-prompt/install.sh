@@ -97,8 +97,9 @@ configure_zshrc() {
 # Add Pure prompt to fpath
 fpath+=("$HOME/.zsh-pure")
 
-# Initialize prompt system
-autoload -U promptinit; promptinit
+# Initialize prompt system (lazy loading)
+autoload -Uz promptinit
+promptinit
 
 # Pure prompt configuration
 zstyle :prompt:pure:user show yes
