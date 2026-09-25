@@ -1,10 +1,8 @@
 {
-    "image": "ghcr.io/majikmate/devcontainer-dev:latest",
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "mads-hartmann.bash-ide-vscode"
-            ]
-        }
+  "image": "ghcr.io/majikmate/devcontainer-dev:latest",
+  "customizations": {
+    "vscode": {
+      "extensions": ["mads-hartmann.bash-ide-vscode"]
     }
+  }
 }

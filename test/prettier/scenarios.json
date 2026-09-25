@@ -1,0 +1,18 @@
+{
+  "prettier_trixie": {
+    "image": "mcr.microsoft.com/devcontainers/base:trixie",
+    "features": {
+      "ghcr.io/devcontainers/features/node:2": {},
+      "prettier": {}
+    }
+  },
+  "prettier_without_tailwindcss": {
+    "image": "mcr.microsoft.com/devcontainers/base:trixie",
+    "features": {
+      "ghcr.io/devcontainers/features/node:2": {},
+      "prettier": {
+        "tailwindcss": false
+      }
+    }
+  }
+}

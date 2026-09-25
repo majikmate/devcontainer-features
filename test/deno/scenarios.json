@@ -1,0 +1,16 @@
+{
+  "deno_lts_trixie": {
+    "image": "debian:trixie",
+    "features": {
+      "deno": {}
+    }
+  },
+  "deno_latest_trixie": {
+    "image": "debian:trixie",
+    "features": {
+      "deno": {
+        "version": "latest"
+      }
+    }
+  }
+}
