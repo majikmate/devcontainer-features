@@ -11,11 +11,11 @@ jobs:
       pull-requests: write
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: "Generate documentation"
         uses: devcontainers/action@v1
-        with:   
+        with:
           publish-features: "false"
           base-path-to-features: "./src"
           generate-docs: "true"
@@ -23,6 +23,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: "Format documentation with Prettier"
+        run: npx --yes prettier --write "src/*/README.md"
 
       - name: Create PR for Documentation
         id: push_image_info
@@ -36,10 +38,10 @@ jobs:
           git config --global user.name github-actions[bot]
           git config pull.rebase false
           branch=automated-documentation-update-$GITHUB_RUN_ID
-          git checkout -b $branch
+          git checkout -b "$branch"
           message='Automated documentation update'
           # Add / update and commit
-          git add */**/README.md
+          git add -- src/*/README.md
           git commit -m 'Automated documentation update [skip ci]' || export NO_UPDATES=true
           # Push
           if [ "$NO_UPDATES" != "true" ] ; then

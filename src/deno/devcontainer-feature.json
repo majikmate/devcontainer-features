@@ -1,0 +1,20 @@
+{
+  "name": "Deno",
+  "id": "deno",
+  "version": "1.0.0",
+  "description": "Installs the Deno runtime from the official Deno release channels (LTS by default)",
+  "options": {
+    "version": {
+      "type": "string",
+      "default": "lts",
+      "proposals": ["lts", "latest"],
+      "description": "Deno version: 'lts' (newest LTS release), 'latest' (newest release) or a version such as '2.5.6'"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["denoland.vscode-deno"]
+    }
+  },
+  "installsAfter": ["ghcr.io/devcontainers/features/common-utils"]
+}

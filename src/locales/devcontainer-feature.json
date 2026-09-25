@@ -1,41 +1,39 @@
 {
-    "name": "Set locales",
-    "id": "locales",
-    "version": "1.0.2",
-    "description": "A feature to set your preferred locales",
-    "options": {
-        "timezone": {
-            "type": "string",
-            "default": "Europe/Vienna",
-            "description": "Choose your preferred timezone."
-        },
-        "lang": {
-            "type": "string",
-            "default": "en_GB.UTF-8",
-            "description": "Choose your preferred language."
-        },
-        "time": {
-            "type": "string",
-            "default": "de_AT.UTF-8",
-            "description": "Choose your preferred time format."
-        },
-        "numeric": {
-            "type": "string",
-            "default": "de_AT.UTF-8",
-            "description": "Choose your preferred numeric format."
-        },
-        "monetary": {
-            "type": "string",
-            "default": "de_AT.UTF-8",
-            "description": "Choose your preferred monetary format."
-        },
-        "measurement": {
-            "type": "string",
-            "default": "de_AT.UTF-8",
-            "description": "Choose your preferred measurement format."
-        }
+  "name": "Set locales",
+  "id": "locales",
+  "version": "1.0.2",
+  "description": "A feature to set your preferred locales",
+  "options": {
+    "timezone": {
+      "type": "string",
+      "default": "Europe/Vienna",
+      "description": "Choose your preferred timezone."
     },
-    "installsAfter": [
-        "ghcr.io/devcontainers/features/common-utils"
-    ]
+    "lang": {
+      "type": "string",
+      "default": "en_GB.UTF-8",
+      "description": "Choose your preferred language."
+    },
+    "time": {
+      "type": "string",
+      "default": "de_AT.UTF-8",
+      "description": "Choose your preferred time format."
+    },
+    "numeric": {
+      "type": "string",
+      "default": "de_AT.UTF-8",
+      "description": "Choose your preferred numeric format."
+    },
+    "monetary": {
+      "type": "string",
+      "default": "de_AT.UTF-8",
+      "description": "Choose your preferred monetary format."
+    },
+    "measurement": {
+      "type": "string",
+      "default": "de_AT.UTF-8",
+      "description": "Choose your preferred measurement format."
+    }
+  },
+  "installsAfter": ["ghcr.io/devcontainers/features/common-utils"]
 }

@@ -1,0 +1,37 @@
+{
+  "name": "Prettier",
+  "id": "prettier",
+  "version": "1.0.0",
+  "description": "Installs the Prettier CLI system-wide and a global fallback configuration that sorts Tailwind CSS classes",
+  "options": {
+    "version": {
+      "type": "string",
+      "default": "latest",
+      "proposals": ["latest"],
+      "description": "Prettier version to install (npm version or dist-tag)"
+    },
+    "tailwindcss": {
+      "type": "boolean",
+      "default": true,
+      "description": "Install prettier-plugin-tailwindcss and enable it in the global configuration /.prettierrc.json"
+    },
+    "tailwindcssPluginVersion": {
+      "type": "string",
+      "default": "latest",
+      "proposals": ["latest"],
+      "description": "prettier-plugin-tailwindcss version to install (npm version or dist-tag)"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["esbenp.prettier-vscode"],
+      "settings": {
+        "prettier.prettierPath": "/usr/local/lib/node_modules/prettier"
+      }
+    }
+  },
+  "installsAfter": [
+    "ghcr.io/devcontainers/features/common-utils",
+    "ghcr.io/devcontainers/features/node"
+  ]
+}
