@@ -23,19 +23,18 @@ var nvmFiles = []string{"nvm.sh", "nvm-exec", "bash_completion"}
 func init() {
 	layer.Register(&layer.Layer{
 		Name:    "node",
-		Summary: "nvm, the newest Node.js LTS release and npm",
+		Summary: "nvm, Node.js (the newest LTS release, or the newest release of the pinned major version) and npm",
 		// build-tools (core): compilers for native npm modules (node-gyp)
 		Needs: []string{"user", "build-tools"},
 		Tools: []layer.Tool{
 			{Name: "nvm", Arg: "NVM_VERSION", Newest: func() (string, error) { return versions.GitHubRelease("nvm-sh/nvm") }},
-			{Name: "node", Arg: "NODE_VERSION", Newest: versions.NodeLTS},
+			{Name: "node", Arg: "NODE_VERSION", Newest: versions.NodeLTS, Pin: nodePin},
 		},
 		Install: installNode,
 		Test: func(t *layer.T) {
 			for _, cmd := range []string{"node", "npm", "npx", "make", "g++", "python3"} {
 				t.HasCommand(cmd)
 			}
-			t.Check("default Node.js is an LTS release", t.Output("node LTS", "node", "-p", "process.release.lts ? 'yes' : 'no'") == "yes")
 			t.Command("user can write to the nvm folder", "test", "-w", filepath.Join(nvmDir, "versions"))
 			nvm := t.Output("nvm loads", "bash", "-c", `. "$NVM_DIR/nvm.sh" && nvm --version`)
 			t.Version("node", t.Output("node version", "node", "--version"))

@@ -33,12 +33,21 @@ var goTools = []struct{ name, pkg, module, arg string }{
 
 func init() {
 	tools := []layer.Tool{
-		{Name: "go", Arg: "GO_VERSION", Newest: versions.GoRelease},
+		{Name: "go", Arg: "GO_VERSION", Newest: versions.GoRelease, Pin: goPin},
+		// golangci-lint is a release binary: it checks code of older Go
+		// versions too, so it stays on the newest release
 		{Name: "golangci-lint", Arg: "GOLANGCI_LINT_VERSION", Newest: func() (string, error) { return versions.GitHubRelease("golangci/golangci-lint") }},
 	}
+	// The tools built with "go install" follow the installed Go version: the
+	// newest release whose go.mod accepts it
 	for _, tool := range goTools {
 		module := tool.module
-		tools = append(tools, layer.Tool{Name: tool.name, Arg: tool.arg, Newest: func() (string, error) { return versions.GoModule(module) }})
+		tools = append(tools, layer.Tool{
+			Name: tool.name, Arg: tool.arg,
+			Newest:    func() (string, error) { return versions.GoModule(module) },
+			Follows:   "go",
+			NewestFor: func(goVersion string) (string, error) { return goModuleFor(module, goVersion) },
+		})
 	}
 	layer.Register(&layer.Layer{
 		Name:    "go",
