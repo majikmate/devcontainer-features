@@ -1,123 +1,80 @@
-# DevContainer Features
+# devcontainer-features
 
-This repository contains a collection of
-[Dev Container features](https://containers.dev/implementors/features/) for enhanced
-development environment setup and configuration.
+The collection of **distribution-independent features** of the Dev Container
+images. Each feature is one layer that the program `devcon` installs with
+`RUN devcon install <feature>` in a Dockerfile.
 
-## Usage
+This repository is a Go library (module `github.com/majikmate/devcontainer-features`).
+It publishes no image. [devcontainer-core](https://github.com/majikmate/devcontainer-core)
+provides the framework, the Debian-bound layers and the core image, and builds
+`devcon` with the newest version of this library.
 
-To use a feature, add it to your `devcontainer.json` file:
+## Features
 
-```json
-{
-  "features": {
-    "ghcr.io/majikmate/devcontainer-features/feature-name:1": {}
-  }
-}
-```
+| Feature | Content | Tools and version source | Needs |
+| ------- | ------- | ------------------------ | ----- |
+| `git` | system-wide git settings (rebase on pull, auto stash) | — | os |
+| `aliases` | shell aliases: ls, ll, grep, vs | — | user |
+| `pure-prompt` | Pure prompt for zsh | pure: GitHub releases | user |
+| `go` | Go, gopls, dlv, staticcheck, govulncheck, golangci-lint | Go: go.dev; tools: Go module proxy; golangci-lint: GitHub releases | user |
+| `node` | nvm, the newest Node.js LTS release, npm | nvm: GitHub releases; Node.js: release index (LTS) | user, build-tools |
+| `deno` | Deno | Deno LTS channel | user |
+| `prettier` | Prettier with the Tailwind CSS plugin and a global configuration `/.prettierrc.json` | npm registry | node |
+| `github-cli` | GitHub CLI (`gh`) from the GitHub release archive | GitHub releases | — |
 
-## Available Features
+`os`, `user` and `build-tools` are layers of devcontainer-core. The build
+arguments, VS Code settings and tests of all layers are listed in
+[docs/layers.md of devcontainer-core](https://github.com/majikmate/devcontainer-core/blob/main/docs/layers.md).
 
-| Feature                                      | Name                            | Description                                                                                                                                                  |
-| -------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [aliases](./src/aliases)                     | Set aliases                     | A feature to set custom shell aliases                                                                                                                        |
-| [deno](./src/deno)                           | Deno                            | Installs the Deno runtime from the official Deno release channels (LTS by default)                                                                           |
-| [gh-cli-extensions](./src/gh-cli-extensions) | Setup gh cli extensions         | A feature to install gh cli extensions                                                                                                                       |
-| [git](./src/git)                             | Setup git                       | A feature to set setup git                                                                                                                                   |
-| [locales](./src/locales)                     | Set locales                     | A feature to set your preferred locales                                                                                                                      |
-| [playwright-deps](./src/playwright-deps)     | Playwright Browser Dependencies | Install Playwright browser dependencies without installing Playwright itself. Installs native libraries required for Chromium, Firefox, and WebKit browsers. |
-| [prettier](./src/prettier)                   | Prettier                        | Installs the Prettier CLI system-wide and a global fallback configuration that sorts Tailwind CSS classes                                                    |
-| [pure-prompt](./src/pure-prompt)             | Pure Prompt                     | Install Pure prompt for zsh - a minimal and elegant prompt                                                                                                   |
-| [update-os](./src/update-os)                 | Update OS                       | A feature to update the os                                                                                                                                   |
+## Rules for a feature
 
-## Examples
+- **Distribution-independent:** a feature downloads, checks and configures.
+  It does not use the package manager of the distribution (no `pkg/debian`
+  of the framework) and no distribution-specific paths. A test enforces this.
+- **What a feature needs from the system**, it declares as a needed layer of
+  devcontainer-core (`Needs`), for example `node` needs `build-tools`.
+- **Every download is checked** against a checksum from the publisher
+  (`sys.VerifySHA256`, `sys.ChecksumFor`).
+- **Every feature has a test** that runs in the built image and records the
+  installed versions (`t.Version`).
+- **Versions:** a feature declares its tools with a function that returns the
+  newest version (`Tools`). The release workflow of every image asks for these
+  versions every night, passes them as build arguments, and rebuilds the image
+  when a version changes. The feature itself does not change for a new tool
+  version.
 
-### Basic Usage
+A feature uses the framework of devcontainer-core: `pkg/layer` (definition,
+tests), `pkg/sys` (commands, downloads, archives, users, files),
+`pkg/shellrc` (shell settings), `pkg/state`, `pkg/versions` and
+`pkg/devcontainer` (VS Code settings).
 
-```json
-{
-  "features": {
-    "ghcr.io/majikmate/devcontainer-features/aliases:1": {},
-    "ghcr.io/majikmate/devcontainer-features/deno:1": {},
-    "ghcr.io/majikmate/devcontainer-features/gh-cli-extensions:1": {},
-    "ghcr.io/majikmate/devcontainer-features/git:1": {},
-    "ghcr.io/majikmate/devcontainer-features/locales:1": {},
-    "ghcr.io/majikmate/devcontainer-features/playwright-deps:1": {},
-    "ghcr.io/majikmate/devcontainer-features/prettier:1": {},
-    "ghcr.io/majikmate/devcontainer-features/pure-prompt:1": {},
-    "ghcr.io/majikmate/devcontainer-features/update-os:1": {}
-  }
-}
-```
+## Adding or changing a feature
 
-### Advanced Configuration
-
-```json
-{
-  "features": {
-    "ghcr.io/majikmate/devcontainer-features/aliases:1": {
-      "aliases": "ls=ls --color,ll=ls --color -la,vs=code -r ."
-    },
-    "ghcr.io/majikmate/devcontainer-features/deno:1": {
-      "version": "lts"
-    },
-    "ghcr.io/majikmate/devcontainer-features/gh-cli-extensions:1": {
-      "gh-mmc": "true"
-    },
-    "ghcr.io/majikmate/devcontainer-features/git:1": {
-      "pull-rebase": "true",
-      "rebase-autostash": "true"
-    },
-    "ghcr.io/majikmate/devcontainer-features/locales:1": {
-      "lang": "en_GB.UTF-8",
-      "measurement": "de_AT.UTF-8"
-    },
-    "ghcr.io/majikmate/devcontainer-features/playwright-deps:1": {
-      "browsers": "chromium firefox webkit"
-    },
-    "ghcr.io/majikmate/devcontainer-features/prettier:1": {
-      "tailwindcss": "true",
-      "tailwindcssPluginVersion": "latest"
-    },
-    "ghcr.io/majikmate/devcontainer-features/pure-prompt:1": {
-      "autoUpdate": "true"
-    },
-    "ghcr.io/majikmate/devcontainer-features/update-os:1": {
-      "atcreate": "true",
-      "atstart": ""
-    }
-  }
-}
-```
-
-## Versions and releases
-
-- Reference a feature by its **major version** (for example `:1`). New minor
-  and patch versions then reach your image automatically at the next build;
-  a new major version (breaking change) needs a change of the reference.
-- A feature is published when its `version` in `devcontainer-feature.json`
-  changes and the change reaches the `main` branch
-  (`.github/workflows/release.yaml`). The workflow also creates the git tag
-  `feature_<id>_<version>`.
-- The images in the `majikmate/devcontainer-*` repositories check every night
-  whether a feature they use has a new version, and then rebuild and release
-  themselves. To take over a new feature version at once, start the Release
-  workflow of an image repository manually (**Actions → Release → Run
-  workflow**).
+1. Add or change one file in this repository (the file registers the layer in
+   its `init` function).
+2. Open a pull request. CI checks the format, runs `go vet` and the unit tests.
+3. After the merge, the Release workflow creates the next version tag
+   (patch; a manual run can choose minor or major).
+4. devcontainer-core finds the new version in its nightly check (23:17 UTC),
+   builds `devcon` with it and releases; the other images follow. A manual
+   chain build of an image does the same at once.
+5. To use a new feature in an image, add `RUN devcon install <feature>` to its
+   Dockerfile.
 
 ## Development
 
-- Pull requests validate all `devcontainer-feature.json` files and run the
-  feature tests in `test/<feature>/` on Debian 13 (trixie)
-  (`.github/workflows/validate.yml`). Run a test locally with
-  `devcontainer features test --skip-autogenerated --features <feature> .`
-- Regenerate this README and the feature READMEs with `./generate-readme.sh`.
-  Text that is not generated belongs into `src/<feature>/NOTES.md`.
+```sh
+CGO_ENABLED=0 go vet ./...
+CGO_ENABLED=0 go test ./...
+```
 
-## Contributing
+## History
 
-Contributions are welcome! Please open an issue or submit a pull request.
+Until version 1 of the images, this repository contained Dev Container
+features (Bash scripts). They are replaced by this library. The feature
+packages already published under `ghcr.io/majikmate/devcontainer-features/…`
+get no more updates.
 
 ## License
 
-This project is licensed under the [MIT License](./LICENSE).
+MIT

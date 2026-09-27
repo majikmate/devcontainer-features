@@ -1,0 +1,64 @@
+# Releases a new version of the Go module after a merge to main: the next
+# version tag vX.Y.Z (patch by default) with a GitHub release that lists the
+# commits. There is no image: devcontainer-core finds the new version in its
+# nightly check and builds devcon with it.
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths: ["**.go", "go.mod", "go.sum"]
+  # Manual release with another version step
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version step
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+
+# One release at a time
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  CGO_ENABLED: "0"
+
+jobs:
+  release:
+    name: Tag the next version
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the repository (with history and tags)
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check out the tooling
+        uses: actions/checkout@v7
+        with:
+          repository: majikmate/devcontainer-core
+          ref: main
+          path: .devcon
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Test before the release
+        run: go vet ./... && go test ./...
+
+      - name: Create the version tag and the GitHub release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          go -C .devcon run ./cmd/devcon-release module-release
+          --dir "$GITHUB_WORKSPACE"
+          --major 1
+          --bump "${{ inputs.bump || 'patch' }}"
