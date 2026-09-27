@@ -38,7 +38,7 @@ Repositories: [core](https://github.com/majikmate/devcontainer-core) ·
 | `go` | Go, gopls, dlv, staticcheck, govulncheck, golangci-lint | Go: go.dev; Go tools: Go module proxy; golangci-lint: GitHub releases | user |
 | `node` | nvm, Node.js, npm | nvm: GitHub releases; Node.js: release index | user, build-tools |
 | `deno` | Deno | newest patch release of the Deno LTS line; Deno releases | user |
-| `prettier` | Prettier with the Tailwind CSS plugin, global configuration `/.prettierrc.json`; formats the workspace once when the container is created (`prettier --write --ignore-unknown .`) | npm registry | node |
+| `prettier` | Prettier with the Tailwind CSS plugin, global configuration `/.prettierrc.json` | npm registry | node |
 | `github-cli` | GitHub CLI (`gh`) from the GitHub release archive | GitHub releases | — |
 
 `os`, `user` and `build-tools` are layers of devcontainer-core. Build
