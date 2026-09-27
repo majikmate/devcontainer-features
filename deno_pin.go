@@ -49,7 +49,7 @@ func denoNewestIn(line string) (string, error) {
 	if !majorLine.MatchString(line) {
 		return "", fmt.Errorf("DENO_PIN=%s: a Deno line is a major version, for example 2", line)
 	}
-	if v, err := versions.DenoLTS(); err == nil && layer.InLine(v, line) {
+	if v, err := denoLTS(); err == nil && layer.InLine(v, line) {
 		return v, nil
 	}
 	if v, err := denoLatest(); err == nil && layer.InLine(v, line) {
@@ -64,6 +64,43 @@ func denoNewestIn(line string) (string, error) {
 
 // highestTag returns the highest tag vX.Y.Z of a line in the output of "git
 // ls-remote --tags".
+// denoLTS returns the newest release of the Deno LTS line. Deno's LTS
+// channel is a minor line (for example 2.9) that gets backported patch
+// releases; the file release-lts-latest.txt names the release with which the
+// channel started (for example v2.9.3), not the newest patch release (for
+// example v2.9.7).
+func denoLTS() (string, error) {
+	start, err := versions.DenoLTS()
+	if err != nil {
+		return "", err
+	}
+	out, err := sys.Output("git", "ls-remote", "--tags", "--refs", "https://github.com/denoland/deno", "refs/tags/"+ltsLine(start)+".*")
+	if err != nil {
+		return start, nil
+	}
+	return newestLTS(start, out), nil
+}
+
+// ltsLine returns the minor line of a release as a tag prefix, for example
+// "v2.9" for v2.9.3.
+func ltsLine(release string) string {
+	parts := strings.SplitN(strings.TrimPrefix(release, "v"), ".", 3)
+	if len(parts) < 2 {
+		return "v" + parts[0]
+	}
+	return "v" + parts[0] + "." + parts[1]
+}
+
+// newestLTS returns the newest release in the tag list (git ls-remote) that
+// belongs to the minor line of start, or start when there is none.
+func newestLTS(start, out string) string {
+	best, err := highestTag(out, strings.TrimPrefix(ltsLine(start), "v"))
+	if err != nil || compareVersions(best, start) < 0 {
+		return start
+	}
+	return best
+}
+
 func highestTag(out, line string) (string, error) {
 	tag := regexp.MustCompile(`refs/tags/(v[0-9]+\.[0-9]+\.[0-9]+)$`)
 	best := ""

@@ -147,6 +147,23 @@ func TestDenoPin(t *testing.T) {
 	}
 }
 
+// TestDenoLTS checks that the LTS channel is a minor line: the newest patch
+// release of the line is installed, not the release that started the channel.
+func TestDenoLTS(t *testing.T) {
+	if got := ltsLine("v2.9.3"); got != "v2.9" {
+		t.Errorf("ltsLine(v2.9.3) = %q, want v2.9", got)
+	}
+	tags := "abc\trefs/tags/v2.9.3\nabc\trefs/tags/v2.9.7\nabc\trefs/tags/v2.9.10\nabc\trefs/tags/v2.9.11-rc.1\n"
+	if got := newestLTS("v2.9.3", tags); got != "v2.9.10" {
+		t.Errorf("newestLTS = %q, want v2.9.10 (newest patch release of 2.9)", got)
+	}
+	// Tags of other lines do not count; without a release of the line, the
+	// start release stays.
+	if got := newestLTS("v2.9.3", "abc\trefs/tags/v2.10.0\nabc\trefs/tags/v2.19.0\n"); got != "v2.9.3" {
+		t.Errorf("newestLTS without 2.9 tags = %q, want v2.9.3", got)
+	}
+}
+
 func TestPinsDeclared(t *testing.T) {
 	for name, arg := range map[string]string{"go": "GO_PIN", "node": "NODE_PIN", "deno": "DENO_PIN"} {
 		l, err := layer.Get(name)

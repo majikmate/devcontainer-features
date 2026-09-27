@@ -37,7 +37,7 @@ Repositories: [core](https://github.com/majikmate/devcontainer-core) ·
 | `pure-prompt` | Pure prompt for zsh | GitHub releases | user |
 | `go` | Go, gopls, dlv, staticcheck, govulncheck, golangci-lint | Go: go.dev; Go tools: Go module proxy; golangci-lint: GitHub releases | user |
 | `node` | nvm, Node.js, npm | nvm: GitHub releases; Node.js: release index | user, build-tools |
-| `deno` | Deno | Deno releases | user |
+| `deno` | Deno | newest patch release of the Deno LTS line; Deno releases | user |
 | `prettier` | Prettier with the Tailwind CSS plugin, global configuration `/.prettierrc.json` | npm registry | node |
 | `github-cli` | GitHub CLI (`gh`) from the GitHub release archive | GitHub releases | — |
 
@@ -58,6 +58,11 @@ installs the newest release.
 | `deno` | `DENO_PIN` (for example `2`) | a major release | when Deno publishes a newer major release | [Deno releases](https://github.com/denoland/deno/releases) |
 
 - With a pin, the layer installs the newest release inside the line.
+- **Deno follows its LTS line:** the LTS channel of Deno is a minor line (for
+  example 2.9) that gets backported patch releases. The layer installs the
+  newest patch release of that line (for example 2.9.7, not 2.9.3, the release
+  that started the channel). When the LTS line is outside the pinned major
+  line, the newest release of the pinned line is installed.
 - At the end of life, the release check and the build fail with a message that
   names the line, the reason, the source and the supported lines. There is no
   warning before.

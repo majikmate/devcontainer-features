@@ -11,7 +11,6 @@ import (
 	"github.com/majikmate/devcontainer-core/pkg/devcontainer"
 	"github.com/majikmate/devcontainer-core/pkg/layer"
 	"github.com/majikmate/devcontainer-core/pkg/sys"
-	"github.com/majikmate/devcontainer-core/pkg/versions"
 )
 
 func init() {
@@ -20,7 +19,7 @@ func init() {
 		Summary: "Deno, the JavaScript/TypeScript runtime and language server",
 		Needs:   []string{"user"},
 		Tools: []layer.Tool{
-			{Name: "deno", Arg: "DENO_VERSION", Newest: versions.DenoLTS, Pin: denoPin},
+			{Name: "deno", Arg: "DENO_VERSION", Newest: denoLTS, Pin: denoPin},
 		},
 		Metadata: devcontainer.Entry{
 			"customizations": devcontainer.VSCode([]string{"denoland.vscode-deno"}, map[string]any{
