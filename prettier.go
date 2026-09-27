@@ -15,6 +15,9 @@ const (
 	prettierPrefix  = "/usr/local"
 	prettierModules = prettierPrefix + "/lib/node_modules"
 	prettierConfig  = "/.prettierrc.json"
+	// prettierFormatWorkspace runs in the workspace folder after the
+	// container is created.
+	prettierFormatWorkspace = "prettier --write --ignore-unknown . || true"
 )
 
 func init() {
@@ -31,6 +34,11 @@ func init() {
 				// The editor uses the same Prettier as the terminal
 				"prettier.prettierPath": prettierModules + "/prettier",
 			}),
+			// Format the workspace once, when the container is created.
+			// --ignore-unknown skips files that Prettier cannot format; a file
+			// with a syntax error does not stop the creation (the output stays
+			// in the creation log).
+			"postCreateCommand": prettierFormatWorkspace,
 		},
 		Install: installPrettier,
 		Test: func(t *layer.T) {
