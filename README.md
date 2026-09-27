@@ -2,16 +2,16 @@
 
 The **distribution-independent layers** of the Dev Container images, as a Go
 library (module `github.com/majikmate/devcontainer-features`). devcontainer-core
-compiles them into the layer tool `devcon`; a Dockerfile installs a layer with
-`RUN devcon install <layer>`. This repository publishes no image.
+compiles them into the layer tool `devenv`; a Dockerfile installs a layer with
+`RUN devenv install <layer>`. This repository publishes no image.
 
 ## Dependencies
 
 ```text
                                                Nightly Content
-devcontainer-features                                  Go library of layers, compiled into devcon
+devcontainer-features                                  Go library of layers, compiled into devenv
   ▼
-devcontainer-core:1                            23:17   Debian 13, devcon, user dev, zsh, SSH server
+devcontainer-core:1                            23:17   Debian 13, devenv, user dev, zsh, SSH server
 ├── devcontainer-base:2                        01:17   + go, build-tools, node, deno, prettier
 │   ├── devcontainer-dev:2                     03:37   + github-cli
 │   ├── devcontainer-classroom-web:2           03:47   classroom settings, AI off
@@ -53,7 +53,7 @@ declares its source (`layer.Source`) and the release choice of the feature
 devcontainer-core chooses the newest release in the channel and in the line
 ([Versions in devcontainer-core](https://github.com/majikmate/devcontainer-core#versions)).
 The `devcontainer.json` of an image can override the choice
-(`customizations.devcon.<tool>`); no image does this today.
+(`customizations.devenv.<tool>`); no image does this today.
 
 | Tool | Pin | Channel | End of life of the line | Source |
 | ---- | --- | ------- | ----------------------- | ------ |
@@ -110,7 +110,7 @@ proxy, Go releases) are in `pkg/versions` of devcontainer-core.
 2. After the merge, the Release workflow creates the next version tag.
 3. devcontainer-core uses the new version in its nightly check (23:17 UTC) and
    releases; the other images follow.
-4. To use a new layer in an image, add `RUN devcon install <layer>` to its
+4. To use a new layer in an image, add `RUN devenv install <layer>` to its
    Dockerfile.
 
 ## Workflow runs

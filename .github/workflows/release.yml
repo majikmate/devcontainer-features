@@ -1,7 +1,7 @@
 # Releases a new version of the Go module after a merge to main: the next
 # version tag vX.Y.Z (patch by default) with a GitHub release that lists the
 # commits. There is no image: devcontainer-core finds the new version in its
-# nightly check and builds devcon with it.
+# nightly check and builds devenv with it.
 name: Release
 
 on:
@@ -42,7 +42,7 @@ jobs:
         with:
           repository: majikmate/devcontainer-core
           ref: main
-          path: .devcon
+          path: .devenv
           persist-credentials: false
 
       - name: Set up Go
@@ -58,7 +58,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: >-
-          go -C .devcon run ./cmd/devcon-release module-release
+          go -C .devenv run ./cmd/devenv-release module-release
           --dir "$GITHUB_WORKSPACE"
           --major 1
           --bump "${{ inputs.bump || 'patch' }}"
