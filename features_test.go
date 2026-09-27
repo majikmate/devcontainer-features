@@ -25,7 +25,7 @@ func TestAllFeaturesRegistered(t *testing.T) {
 			t.Errorf("feature %s: summary, install and test are required", name)
 		}
 		for _, tool := range l.Tools {
-			if tool.Name == "" || tool.Arg == "" || tool.Newest == nil {
+			if tool.Name == "" || tool.Arg == "" || tool.Source == nil {
 				t.Errorf("feature %s: tool %+v is incomplete", name, tool)
 			}
 		}

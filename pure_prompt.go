@@ -18,7 +18,7 @@ func init() {
 		Summary: "Pure prompt for zsh (https://github.com/sindresorhus/pure)",
 		Needs:   []string{"user"},
 		Tools: []layer.Tool{
-			{Name: "pure", Arg: "PURE_VERSION", Newest: func() (string, error) { return versions.GitHubRelease("sindresorhus/pure") }},
+			{Name: "pure", Arg: "PURE_VERSION", Source: versions.GitHubRepository("sindresorhus/pure")},
 		},
 		Install: func(e *layer.Env) error {
 			version, err := e.Version("pure")
