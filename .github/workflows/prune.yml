@@ -1,0 +1,53 @@
+# Deletes the packages of the former Dev Container features (Bash scripts),
+# which this repository published to ghcr.io until the Go features library
+# replaced them. They get no more updates.
+#
+# Manual run only. "report" lists the packages in the run summary; "apply"
+# deletes them (this cannot be undone).
+name: Prune old feature packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: report (list only) or apply (delete)
+        type: choice
+        options: [report, apply]
+        default: report
+
+env:
+  CGO_ENABLED: "0"
+
+jobs:
+  prune:
+    name: Old feature packages
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+    steps:
+      - name: Check out the tooling
+        uses: actions/checkout@v7
+        with:
+          repository: majikmate/devcontainer-core
+          ref: main
+          path: .devcon
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: .devcon/go.mod
+          cache: false
+
+      - name: List or delete the packages
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          go -C .devcon run ./cmd/devcon-release prune
+          --delete-packages
+          --mode "${{ inputs.mode }}"
+          --packages "devcontainer-features/aliases devcontainer-features/deno
+          devcontainer-features/gh-cli-extensions devcontainer-features/git
+          devcontainer-features/locales devcontainer-features/playwright-deps
+          devcontainer-features/prettier devcontainer-features/pure-prompt
+          devcontainer-features/update-os devcontainer-features"
