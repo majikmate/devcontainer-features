@@ -17,7 +17,7 @@ func init() {
 		Name:    "github-cli",
 		Summary: "GitHub CLI (gh) from the GitHub release archive",
 		Tools: []layer.Tool{
-			{Name: "gh", Arg: "GITHUB_CLI_VERSION", Newest: func() (string, error) { return versions.GitHubRelease("cli/cli") }},
+			{Name: "gh", Arg: "GITHUB_CLI_VERSION", Source: versions.GitHubRepository("cli/cli")},
 		},
 		Install: installGitHubCLI,
 		Test: func(t *layer.T) {

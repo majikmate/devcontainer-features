@@ -23,8 +23,8 @@ func init() {
 		Summary: "Prettier with the Tailwind CSS plugin and a global configuration",
 		Needs:   []string{"node"},
 		Tools: []layer.Tool{
-			{Name: "prettier", Arg: "PRETTIER_VERSION", Newest: func() (string, error) { return versions.NPM("prettier") }},
-			{Name: "prettier-plugin-tailwindcss", Arg: "PRETTIER_PLUGIN_TAILWINDCSS_VERSION", Newest: func() (string, error) { return versions.NPM("prettier-plugin-tailwindcss") }},
+			{Name: "prettier", Arg: "PRETTIER_VERSION", Source: versions.NPMPackage("prettier")},
+			{Name: "prettier-plugin-tailwindcss", Arg: "PRETTIER_PLUGIN_TAILWINDCSS_VERSION", Source: versions.NPMPackage("prettier-plugin-tailwindcss")},
 		},
 		Metadata: devcontainer.Entry{
 			"customizations": devcontainer.VSCode([]string{"esbenp.prettier-vscode"}, map[string]any{

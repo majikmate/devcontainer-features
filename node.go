@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/majikmate/devcontainer-core/pkg/devcontainer"
 	"github.com/majikmate/devcontainer-core/pkg/layer"
 	"github.com/majikmate/devcontainer-core/pkg/shellrc"
 	"github.com/majikmate/devcontainer-core/pkg/state"
@@ -23,12 +24,19 @@ var nvmFiles = []string{"nvm.sh", "nvm-exec", "bash_completion"}
 func init() {
 	layer.Register(&layer.Layer{
 		Name:    "node",
-		Summary: "nvm, Node.js (the newest LTS release, or the newest release of the pinned major version) and npm",
+		Summary: "nvm, Node.js (the newest LTS release of the line 24) and npm",
 		// build-tools (core): compilers for native npm modules (node-gyp)
 		Needs: []string{"user", "build-tools"},
 		Tools: []layer.Tool{
-			{Name: "nvm", Arg: "NVM_VERSION", Newest: func() (string, error) { return versions.GitHubRelease("nvm-sh/nvm") }},
-			{Name: "node", Arg: "NODE_VERSION", Newest: versions.NodeLTS, Pin: nodePin},
+			{Name: "nvm", Arg: "NVM_VERSION", Source: versions.GitHubRepository("nvm-sh/nvm")},
+			// Node.js: the LTS releases of the line 24; the end date of the
+			// line in the release schedule stops the release
+			{Name: "node", Arg: "NODE_VERSION", Source: nodeSource, Version: layer.Config{Pin: "24", Channel: "lts"}},
+		},
+		Metadata: devcontainer.Entry{
+			// No "new version of npm available" message: npm comes with the
+			// Node.js release of the image.
+			"containerEnv": map[string]any{"NPM_CONFIG_UPDATE_NOTIFIER": "false"},
 		},
 		Install: installNode,
 		Test: func(t *layer.T) {
@@ -38,6 +46,8 @@ func init() {
 			t.Command("user can write to the nvm folder", "test", "-w", filepath.Join(nvmDir, "versions"))
 			nvm := t.Output("nvm loads", "bash", "-c", `. "$NVM_DIR/nvm.sh" && nvm --version`)
 			t.Version("node", t.Output("node version", "node", "--version"))
+			// The channel of the release, for example "LTS Krypton" or "Current"
+			t.Version("node-channel", nodeChannelName(t.Output("node release", "node", "-p", "process.release.lts || ''")))
 			t.Version("npm", t.Output("npm version", "npm", "--version"))
 			t.Version("nvm", "v"+nvm)
 		},

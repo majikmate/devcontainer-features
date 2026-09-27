@@ -19,9 +19,15 @@ func init() {
 		Summary: "Deno, the JavaScript/TypeScript runtime and language server",
 		Needs:   []string{"user"},
 		Tools: []layer.Tool{
-			{Name: "deno", Arg: "DENO_VERSION", Newest: denoLTS, Pin: denoPin},
+			// Deno: the LTS release (the one of "deno upgrade lts") of the
+			// line 2; a newer Deno major release stops the release
+			{Name: "deno", Arg: "DENO_VERSION", Source: denoSource, Version: layer.Config{Pin: "2", Channel: "lts"}},
 		},
 		Metadata: devcontainer.Entry{
+			// No upgrade message of the Deno CLI and of the language server in
+			// VS Code: the feature decides the Deno version (a new image
+			// brings the next release of the channel).
+			"containerEnv": map[string]any{"DENO_NO_UPDATE_CHECK": "1"},
 			"customizations": devcontainer.VSCode([]string{"denoland.vscode-deno"}, map[string]any{
 				"deno.enable":            true,
 				"deno.codeLens.test":     true,
@@ -38,7 +44,10 @@ func init() {
 				_ = os.WriteFile(file, []byte("const n: number = 1 + 1;\nconsole.log(n);\n"), 0o644)
 				t.Check("run TypeScript with type check", t.Output("deno run", "deno", "run", "--check", file) == "2")
 			}
-			t.Version("deno", "v"+layer.FindVersion(t.Output("deno version", "deno", "--version"), `deno ([0-9.]+)`))
+			version := t.Output("deno version", "deno", "--version")
+			t.Version("deno", "v"+layer.FindVersion(version, `deno ([0-9.]+)`))
+			// The channel of the build, for example "long term support" or "stable"
+			t.Version("deno-channel", layer.FindVersion(version, `deno [0-9.]+ \(([^,]+),`))
 		},
 	})
 }

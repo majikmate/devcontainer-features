@@ -37,7 +37,7 @@ Repositories: [core](https://github.com/majikmate/devcontainer-core) ·
 | `pure-prompt` | Pure prompt for zsh | GitHub releases | user |
 | `go` | Go, gopls, dlv, staticcheck, govulncheck, golangci-lint | Go: go.dev; Go tools: Go module proxy; golangci-lint: GitHub releases | user |
 | `node` | nvm, Node.js, npm | nvm: GitHub releases; Node.js: release index | user, build-tools |
-| `deno` | Deno | newest patch release of the Deno LTS line; Deno releases | user |
+| `deno` | Deno | Deno releases and release files | user |
 | `prettier` | Prettier with the Tailwind CSS plugin, global configuration `/.prettierrc.json` | npm registry | node |
 | `github-cli` | GitHub CLI (`gh`) from the GitHub release archive | GitHub releases | — |
 
@@ -45,35 +45,48 @@ Repositories: [core](https://github.com/majikmate/devcontainer-core) ·
 arguments, VS Code settings and tests of all layers:
 [docs/layers.md](https://github.com/majikmate/devcontainer-core/blob/main/docs/layers.md).
 
-## Pinned release lines
+## Versions
 
-The Dockerfile that installs a layer can pin a release line, for example
-`ARG GO_PIN=1.27` before `RUN devcon install go`. Without a pin, the layer
-installs the newest release.
+**The feature decides the version, never the Dockerfile.** Every tool
+declares its source (`layer.Source`) and the release choice of the feature
+(`Tool.Version`: pinned line and channel). The general rule of
+devcontainer-core chooses the newest release in the channel and in the line
+([Versions in devcontainer-core](https://github.com/majikmate/devcontainer-core#versions)).
+The `devcontainer.json` of an image can override the choice
+(`customizations.devcon.<tool>`); no image does this today.
 
-| Layer | Build argument | A line is | End of life | Source |
-| ----- | -------------- | --------- | ----------- | ------ |
-| `go` | `GO_PIN` (for example `1.27`) | a major release 1.N | when Go 1.(N+2) is released | [Go release policy](https://go.dev/doc/devel/release#policy) |
-| `node` | `NODE_PIN` (for example `24`) | a major release | on the end date of the line | [Node.js release schedule](https://github.com/nodejs/Release#release-schedule) |
-| `deno` | `DENO_PIN` (for example `2`) | a major release | when Deno publishes a newer major release | [Deno releases](https://github.com/denoland/deno/releases) |
+| Tool | Pin | Channel | End of life of the line | Source |
+| ---- | --- | ------- | ----------------------- | ------ |
+| `go` | `1.27` | — | when Go 1.(N+2) is released | [Go release policy](https://go.dev/doc/devel/release#policy) |
+| `node` | `24` | `lts` | on the end date of the line | [Node.js release schedule](https://github.com/nodejs/Release#release-schedule) |
+| `deno` | `2` | `lts` | when Deno publishes a newer major release | [Deno releases](https://github.com/denoland/deno/releases) |
+| all other tools | none | — | — | the newest release |
 
-- With a pin, the layer installs the newest release inside the line.
-- **Deno follows its LTS line:** the LTS channel of Deno is a minor line (for
-  example 2.9) that gets backported patch releases. The layer installs the
-  newest patch release of that line (for example 2.9.7, not 2.9.3, the release
-  that started the channel). When the LTS line is outside the pinned major
-  line, the newest release of the pinned line is installed.
-- At the end of life, the release check and the build fail with a message that
-  names the line, the reason, the source and the supported lines. There is no
-  warning before.
-- **The Go tools follow Go:** gopls, dlv, staticcheck and govulncheck get the
+- **Channels.** Node.js: `lts` (the releases of an LTS line) or `current`
+  (all releases). Deno: `lts` or `stable` (all releases).
+- **Deno LTS is one release, not a minor line.** The channel `lts` is exactly
+  the release in [release-lts-latest.txt](https://dl.deno.land/release-lts-latest.txt),
+  the same as `deno upgrade lts`. Deno promotes a release of the LTS line (for
+  example v2.9.3) to LTS and builds it again with the channel "long term
+  support". Newer patch releases of the same line (for example v2.9.7) are
+  stable releases until Deno promotes one of them
+  ([Deno stability and releases](https://docs.deno.com/runtime/fundamentals/stability_and_releases/)).
+- **End of life.** At the end of life of a pinned line, the release check and
+  the build fail with a message that names the line, the reason, the source
+  and the supported lines. There is no warning before.
+- **The Go tools follow Go.** gopls, dlv, staticcheck and govulncheck get the
   newest release whose `go.mod` accepts the installed Go version.
-  golangci-lint stays on the newest release.
-- All other tools (nvm, Prettier and its plugin, GitHub CLI, Pure) stay on the
-  newest release.
+- **Release notes.** They show `tool/<name>`, `pin/<name>` and
+  `channel/<name>`, and the installed `deno-channel` (from `deno --version`,
+  for example `long term support`) and `node-channel` (for example
+  `LTS Krypton`).
+- **No upgrade messages.** The feature decides the version, so the layers set
+  `DENO_NO_UPDATE_CHECK=1` (Deno CLI and the language server in VS Code) and
+  `NPM_CONFIG_UPDATE_NOTIFIER=false` (npm) as `containerEnv`.
 
-A layer declares a pinnable tool with `layer.Pin` (see `golang_pin.go`,
-`node_pin.go`, `deno_pin.go`).
+The sources and their rules are in `golang_versions.go`, `node_versions.go`
+and `deno_versions.go`; the general sources (GitHub releases, npm, Go module
+proxy, Go releases) are in `pkg/versions` of devcontainer-core.
 
 ## Rules for a layer
 
@@ -85,8 +98,8 @@ A layer declares a pinnable tool with `layer.Pin` (see `golang_pin.go`,
 - **Every download is checked** against a checksum of the publisher.
 - **Every layer has a test** that runs in the built image and records the
   installed versions.
-- **Versions:** a layer declares its tools with a function that returns the
-  newest version. The release workflow of every image passes these versions
+- **Versions:** a layer declares its tools with a source and its release
+  choice (see [Versions](#versions)). The release workflow of every image passes these versions
   as build arguments and releases a new image when one changes.
 
 ## Change a layer
