@@ -17,14 +17,46 @@ provides the framework, the Debian-bound layers and the core image, and builds
 | `aliases` | shell aliases: ls, ll, grep, vs | — | user |
 | `pure-prompt` | Pure prompt for zsh | pure: GitHub releases | user |
 | `go` | Go, gopls, dlv, staticcheck, govulncheck, golangci-lint | Go: go.dev; tools: Go module proxy; golangci-lint: GitHub releases | user |
-| `node` | nvm, the newest Node.js LTS release, npm | nvm: GitHub releases; Node.js: release index (LTS) | user, build-tools |
-| `deno` | Deno | Deno LTS channel | user |
+| `node` | nvm, Node.js (newest LTS release or pinned major version), npm | nvm: GitHub releases; Node.js: release index | user, build-tools |
+| `deno` | Deno | Deno LTS channel, newest release | user |
 | `prettier` | Prettier with the Tailwind CSS plugin and a global configuration `/.prettierrc.json` | npm registry | node |
 | `github-cli` | GitHub CLI (`gh`) from the GitHub release archive | GitHub releases | — |
 
 `os`, `user` and `build-tools` are layers of devcontainer-core. The build
 arguments, VS Code settings and tests of all layers are listed in
 [docs/layers.md of devcontainer-core](https://github.com/majikmate/devcontainer-core/blob/main/docs/layers.md).
+
+## Pinned release lines
+
+Go, Node.js and Deno can be pinned to a release line. The pin goes into the
+Dockerfile that installs the feature, for example `ARG GO_PIN=1.27` before
+`RUN devcon install go`. Without a pin, the feature installs the newest
+release.
+
+| Feature | Build argument | A line is | End of life | Source |
+| ------- | -------------- | --------- | ----------- | ------ |
+| `go` | `GO_PIN` (for example `1.27`) | a major release 1.N | when Go 1.(N+2) is released: Go supports the two newest major releases | [go.dev release policy](https://go.dev/doc/devel/release#policy), release list of go.dev |
+| `node` | `NODE_PIN` (for example `24`) | a major release | on the end date of the line | [Node.js release schedule](https://github.com/nodejs/Release#release-schedule) |
+| `deno` | `DENO_PIN` (for example `2`) | a major release | when Deno publishes a newer major release | [Deno releases](https://github.com/denoland/deno/releases) |
+
+- With a pin, the feature installs the newest release inside the line.
+- At the end of life, the release check and the build fail with a message
+  that names the line, the reason, the source and the supported lines. There
+  is no warning before.
+- **The Go tools follow Go:** gopls, dlv, staticcheck and govulncheck are
+  built with the installed Go, so the feature installs the newest release
+  whose `go.mod` accepts the installed Go version (from the Go module proxy).
+  golangci-lint is a release binary that also checks code of older Go
+  versions, so it stays on the newest release.
+- **All other tools** (nvm, Prettier and its Tailwind CSS plugin, GitHub CLI,
+  Pure) stay on the newest release. The global Prettier and Tailwind CSS
+  plugin are only the fallback for projects without their own Prettier setup;
+  the plugin reads the `tailwindcss` package and configuration of the project.
+  A project that needs a specific plugin version installs it in its own
+  `package.json`.
+
+A feature declares a pinnable tool with `layer.Pin` (see `golang_pin.go`,
+`node_pin.go` and `deno_pin.go`).
 
 ## Rules for a feature
 

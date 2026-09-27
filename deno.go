@@ -20,7 +20,7 @@ func init() {
 		Summary: "Deno, the JavaScript/TypeScript runtime and language server",
 		Needs:   []string{"user"},
 		Tools: []layer.Tool{
-			{Name: "deno", Arg: "DENO_VERSION", Newest: versions.DenoLTS},
+			{Name: "deno", Arg: "DENO_VERSION", Newest: versions.DenoLTS, Pin: denoPin},
 		},
 		Metadata: devcontainer.Entry{
 			"customizations": devcontainer.VSCode([]string{"denoland.vscode-deno"}, map[string]any{
