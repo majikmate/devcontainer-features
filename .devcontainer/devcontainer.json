@@ -1,8 +1,5 @@
+// Development environment of this repository: the development image with Go
+// (the Go extension comes from the image).
 {
-  "image": "ghcr.io/majikmate/devcontainer-dev:latest",
-  "customizations": {
-    "vscode": {
-      "extensions": ["mads-hartmann.bash-ide-vscode"]
-    }
-  }
+  "image": "ghcr.io/majikmate/devcontainer-dev:2"
 }

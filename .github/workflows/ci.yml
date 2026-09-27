@@ -1,0 +1,39 @@
+# Checks the features on every pull request and every push to main: format,
+# go vet and the unit tests (all features registered, no distribution-specific
+# imports). The features are installed and tested in the images: core builds
+# devcon with the newest version of this module.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  CGO_ENABLED: "0"
+
+jobs:
+  test:
+    name: Go checks
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Check the format (gofmt)
+        run: go fmt ./... && git diff --exit-code
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test ./...
