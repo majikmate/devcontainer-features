@@ -42,21 +42,17 @@ func init() {
 			if err := sys.WriteFile(filepath.Join(pureDir, "VERSION"), version+"\n", 0o644); err != nil {
 				return err
 			}
-			// Pure shows user@host only over SSH, in a container outside of
-			// GitHub Codespaces, or as root (flag psvar[13], set once by
-			// "prompt pure"). The flag after "prompt pure" shows it always,
-			// also in Codespaces.
+			// Pure default: user@host only over SSH, in a container outside of
+			// GitHub Codespaces, or as root.
 			return shellrc.Zsh("prompt", `fpath+=("`+pureDir+`")
 autoload -Uz promptinit
 promptinit
 zstyle :prompt:pure:host show yes
 zstyle :prompt:pure:git:stash show yes
-prompt pure
-psvar[13]=1`)
+prompt pure`)
 		},
 		Test: func(t *layer.T) {
 			t.Command("Pure prompt active in zsh", "zsh", "-ic", `[[ "$prompt_theme[1]" == pure ]]`)
-			t.Command("Pure prompt shows user@host, also in Codespaces", "env", "CODESPACES=true", "zsh", "-ic", `[[ "$psvar[13]" == 1 ]]`)
 			data, _ := os.ReadFile(filepath.Join(pureDir, "VERSION"))
 			t.Version("pure", string(data))
 		},
