@@ -186,9 +186,11 @@ done | sed '$ s/,$//')
   changes and the change reaches the \`main\` branch
   (\`.github/workflows/release.yaml\`). The workflow also creates the git tag
   \`feature_<id>_<version>\`.
-- The images in the \`majikmate/devcontainer-*\` repositories check every hour
+- The images in the \`majikmate/devcontainer-*\` repositories check every night
   whether a feature they use has a new version, and then rebuild and release
-  themselves. No further action is needed here.
+  themselves. To take over a new feature version at once, start the Release
+  workflow of an image repository manually (**Actions → Release → Run
+  workflow**).
 
 ## Development
 
