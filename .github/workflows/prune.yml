@@ -1,0 +1,37 @@
+# Deletes the outdated workflow runs of this repository (it has no package).
+# The logic is in the shared workflow of devcontainer-core:
+# https://github.com/majikmate/devcontainer-core/blob/main/.github/workflows/devcontainer-prune.yml
+#
+# Every Sunday it deletes the finished workflow runs (any result) older than
+# 90 days. A manual run lists (report) or deletes (apply) them; the scope
+# "all-but-newest" deletes every finished run except the newest run of each
+# workflow (a clean-up).
+name: Prune
+
+on:
+  schedule:
+    - cron: "43 22 * * 0"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: report (list only) or apply (delete; this cannot be undone)
+        type: choice
+        options: [report, apply]
+        default: report
+      scope:
+        description: outdated (older than 90 days) or all-but-newest
+        type: choice
+        options: [outdated, all-but-newest]
+        default: outdated
+
+jobs:
+  prune:
+    uses: majikmate/devcontainer-core/.github/workflows/devcontainer-prune.yml@main
+    # The shared job asks for packages: write (not used with runs-only)
+    permissions:
+      packages: write
+      actions: write
+    with:
+      mode: ${{ inputs.mode || 'apply' }}
+      scope: ${{ inputs.scope || 'outdated' }}
+      runs-only: true
