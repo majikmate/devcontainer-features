@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// © 2026 Hannes Stauss (scalarion@nimblescape.com)
+// Licensed under the MIT License. See LICENSE in the repository root for details.
+
 // Package git is the layer git: system-wide git settings for simple
 // workflows. git itself comes with the layer os of devcontainer-core.
 //

@@ -153,6 +153,6 @@ CGO_ENABLED=0 go vet ./...
 CGO_ENABLED=0 go test ./...
 ```
 
-## License
+---
 
-MIT
+© 2026 Hannes Stauss (scalarion@nimblescape.com) · [MIT License](LICENSE).

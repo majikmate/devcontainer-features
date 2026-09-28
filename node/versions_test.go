@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// © 2026 Hannes Stauss (scalarion@nimblescape.com)
+// Licensed under the MIT License. See LICENSE in the repository root for details.
+
 // Tests of the Node.js release source (versions.go) and of the declaration of
 // the layer node, with excerpts of the Node.js release index and schedule.
 

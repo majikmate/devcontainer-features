@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// © 2026 Hannes Stauss (scalarion@nimblescape.com)
+// Licensed under the MIT License. See LICENSE in the repository root for details.
+
 // Package pureprompt is the layer pure-prompt: the Pure prompt for zsh
 // (https://github.com/sindresorhus/pure), from the files of a release tag.
 //

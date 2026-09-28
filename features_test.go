@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// © 2026 Hannes Stauss (scalarion@nimblescape.com)
+// Licensed under the MIT License. See LICENSE in the repository root for details.
+
 // Tests of the whole collection: all layers are registered and complete,
 // every tool follows the general version rule, every layer file has its
 // release choice as constants, and no feature uses distribution-specific

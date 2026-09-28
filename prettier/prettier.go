@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// © 2026 Hannes Stauss (scalarion@nimblescape.com)
+// Licensed under the MIT License. See LICENSE in the repository root for details.
+
 // Package prettier is the layer prettier: Prettier with the Tailwind CSS
 // plugin, installed with npm in /usr/local, and a global fallback
 // configuration /.prettierrc.json.
