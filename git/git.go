@@ -1,4 +1,11 @@
-package features
+// Package git is the layer git: system-wide git settings for simple
+// workflows. git itself comes with the layer os of devcontainer-core.
+//
+// The layer installs no tool, so it has no version, no pin and no channel.
+// Importing the package registers the layer:
+//
+//	import _ "github.com/majikmate/devcontainer-features/git"
+package git
 
 import (
 	"github.com/majikmate/devcontainer-core/pkg/layer"
@@ -12,11 +19,13 @@ var gitSettings = [][2]string{
 	{"rebase.autoStash", "true"},
 }
 
+// init registers the layer.
 func init() {
 	layer.Register(&layer.Layer{
 		Name:    "git",
 		Summary: "system-wide git settings (rebase on pull, auto stash)",
 		Needs:   []string{"os"},
+		// The settings go to the system configuration (/etc/gitconfig)
 		Install: func(e *layer.Env) error {
 			for _, s := range gitSettings {
 				if err := sys.Run(nil, "git", "config", "--system", s[0], s[1]); err != nil {
@@ -25,6 +34,7 @@ func init() {
 			}
 			return nil
 		},
+		// Every setting has its value; the test records the git version
 		Test: func(t *layer.T) {
 			for _, s := range gitSettings {
 				value, _ := sys.Output("git", "config", "--system", s[0])

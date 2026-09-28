@@ -1,4 +1,10 @@
-package features
+// This file has the version rule of the Go tools that follow the installed
+// Go version (gopls, dlv, staticcheck, govulncheck). The Go release lines and
+// their end of life are general (versions.GoReleases of devcontainer-core):
+// a line is a Go major release 1.N; it ends when Go 1.(N+2) is released. The
+// release choice of the feature (pin and channel) is at the top of golang.go.
+
+package golang
 
 import (
 	"regexp"
@@ -7,9 +13,6 @@ import (
 	"github.com/majikmate/devcontainer-core/pkg/sys"
 	"github.com/majikmate/devcontainer-core/pkg/versions"
 )
-
-// The Go release lines and their end of life are general (versions.GoReleases):
-// a line is a Go major release 1.N; it ends when Go 1.(N+2) is released.
 
 // goModuleWorks reports whether a release of a Go module works with the
 // installed Go version: its go.mod needs at most that version. The Go tools

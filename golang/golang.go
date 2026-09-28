@@ -1,4 +1,16 @@
-package features
+// Package golang is the layer go: Go from go.dev, the Go tools gopls, dlv,
+// staticcheck and govulncheck (built with "go install"), golangci-lint from
+// its release archive, and the VS Code extension for Go. The group golang
+// owns GOROOT and GOPATH, so the development user can install modules and
+// tools.
+//
+// This file declares the layer and its installation; versions.go has the
+// rule for the Go tools that follow the installed Go version. The Go release
+// lines and their end of life are general (versions.GoReleases of
+// devcontainer-core). Importing the package registers the layer:
+//
+//	import _ "github.com/majikmate/devcontainer-features/golang"
+package golang
 
 import (
 	"encoding/json"
@@ -13,6 +25,28 @@ import (
 	"github.com/majikmate/devcontainer-core/pkg/state"
 	"github.com/majikmate/devcontainer-core/pkg/sys"
 	"github.com/majikmate/devcontainer-core/pkg/versions"
+)
+
+// Release choice of the tools go and golangci-lint: the pinned release line
+// and the release channel (see layer.Config). An empty pin means no pin: the
+// newest release. An empty channel means the default channel of the source
+// (Go and GitHub releases have no channels).
+//
+//   - go: the newest release of the line 1.27; the end of life of the line
+//     (when Go 1.29 is released) stops the release.
+//   - golangci-lint: the newest release. It is a release binary that checks
+//     code of older Go versions too.
+//
+// The Go tools gopls, dlv, staticcheck and govulncheck have no pin of their
+// own: they follow go (the newest release whose go.mod accepts the installed
+// Go version, see versions.go). The devcontainer.json of an image can
+// override pin and channel, per tool
+// ("customizations": {"devcon": {"go": {"pin": "...", "channel": "..."}}}).
+const (
+	goPin               = "1.27"
+	goChannel           = ""
+	golangciLintPin     = ""
+	golangciLintChannel = ""
 )
 
 // Paths of Go. The Dockerfile sets the same values with ENV:
@@ -31,14 +65,11 @@ var goTools = []struct{ name, pkg, module, arg string }{
 	{"govulncheck", "golang.org/x/vuln/cmd/govulncheck", "golang.org/x/vuln", "GOVULNCHECK_VERSION"},
 }
 
+// init registers the layer.
 func init() {
 	tools := []layer.Tool{
-		// Go: pinned to the line 1.27 (the newest 1.27.x); the end of life of
-		// the line stops the release
-		{Name: "go", Arg: "GO_VERSION", Source: versions.GoReleases(), Version: layer.Config{Pin: "1.27"}},
-		// golangci-lint is a release binary: it checks code of older Go
-		// versions too, so it stays on the newest release
-		{Name: "golangci-lint", Arg: "GOLANGCI_LINT_VERSION", Source: versions.GitHubRepository("golangci/golangci-lint")},
+		{Name: "go", Arg: "GO_VERSION", Source: versions.GoReleases(), Version: layer.Config{Pin: goPin, Channel: goChannel}},
+		{Name: "golangci-lint", Arg: "GOLANGCI_LINT_VERSION", Source: versions.GitHubRepository("golangci/golangci-lint"), Version: layer.Config{Pin: golangciLintPin, Channel: golangciLintChannel}},
 	}
 	// The tools built with "go install" follow the installed Go version: the
 	// newest release whose go.mod accepts it
@@ -77,6 +108,9 @@ func init() {
 	})
 }
 
+// installGo installs Go from go.dev (checked against the checksum that go.dev
+// publishes), builds the Go tools, installs golangci-lint and gives the group
+// golang write access to GOROOT and GOPATH.
 func installGo(e *layer.Env) error {
 	dir, cleanup, err := sys.TempDir()
 	if err != nil {
@@ -215,6 +249,9 @@ func installGolangciLint(e *layer.Env, dir string) error {
 	return sys.WriteFile(filepath.Join(goPath, "bin", "golangci-lint"), string(data), 0o755)
 }
 
+// testGo checks the commands, GOPATH and the write access of the
+// development user, builds and runs a small program, and records the
+// versions of all tools.
 func testGo(t *layer.T) {
 	for _, cmd := range []string{"go", "gofmt", "gopls", "dlv", "staticcheck", "govulncheck", "golangci-lint"} {
 		t.HasCommand(cmd)

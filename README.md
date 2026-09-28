@@ -30,16 +30,26 @@ Repositories: [core](https://github.com/majikmate/devcontainer-core) ·
 
 ## Layers
 
-| Layer | Content | Version source | Needs |
-| ----- | ------- | -------------- | ----- |
-| `git` | system-wide git settings (rebase on pull, auto stash) | — | os |
-| `aliases` | shell aliases: ls, ll, grep, vs | — | user |
-| `pure-prompt` | Pure prompt for zsh | GitHub releases | user |
-| `go` | Go, gopls, dlv, staticcheck, govulncheck, golangci-lint | Go: go.dev; Go tools: Go module proxy; golangci-lint: GitHub releases | user |
-| `node` | nvm, Node.js, npm | nvm: GitHub releases; Node.js: release index | user, build-tools |
-| `deno` | Deno | Deno releases and release files | user |
-| `prettier` | Prettier with the Tailwind CSS plugin, global configuration `/.prettierrc.json` | npm registry | node |
-| `github-cli` | GitHub CLI (`gh`) from the GitHub release archive | GitHub releases | — |
+Each layer is a Go package of its own. The package file with the name of the
+folder (for example `deno/deno.go`) declares the layer; a file `versions.go`
+holds the version source of the layer when it has its own.
+
+| Layer | Package | Content | Version source | Needs |
+| ----- | ------- | ------- | -------------- | ----- |
+| `git` | [`git`](git) | system-wide git settings (rebase on pull, auto stash) | — | os |
+| `aliases` | [`aliases`](aliases) | shell aliases: ls, ll, grep, vs | — | user |
+| `pure-prompt` | [`pureprompt`](pureprompt) | Pure prompt for zsh | GitHub releases | user |
+| `go` | [`golang`](golang) | Go, gopls, dlv, staticcheck, govulncheck, golangci-lint | Go: go.dev; Go tools: Go module proxy; golangci-lint: GitHub releases | user |
+| `node` | [`node`](node) | nvm, Node.js, npm | nvm: GitHub releases; Node.js: release index | user, build-tools |
+| `deno` | [`deno`](deno) | Deno | Deno releases and release files | user |
+| `prettier` | [`prettier`](prettier) | Prettier with the Tailwind CSS plugin, global configuration `/.prettierrc.json` | npm registry | node |
+| `github-cli` | [`githubcli`](githubcli) | GitHub CLI (`gh`) from the GitHub release archive | GitHub releases | — |
+
+The root package imports all layer packages, so
+`import _ "github.com/majikmate/devcontainer-features"` registers all layers
+(devcontainer-core builds `devcon` this way). A single layer is registered
+with the import of its package, for example
+`import _ "github.com/majikmate/devcontainer-features/deno"`.
 
 `os`, `user` and `build-tools` are layers of devcontainer-core. Build
 arguments, VS Code settings and tests of all layers:
@@ -49,7 +59,20 @@ arguments, VS Code settings and tests of all layers:
 
 **The feature decides the version, never the Dockerfile.** Every tool
 declares its source (`layer.Source`) and the release choice of the feature
-(`Tool.Version`: pinned line and channel). The general rule of
+(`Tool.Version`: pinned line and channel). The release choice is a pair of
+constants at the top of the layer file, directly after the imports, for
+example in [`deno/deno.go`](deno/deno.go):
+
+```go
+const (
+	denoPin     = "2"
+	denoChannel = "lts"
+)
+```
+
+An empty pin means no pin (the newest release); an empty channel means the
+default channel of the source. A test checks that every layer file with
+tools starts with these constants. The general rule of
 devcontainer-core chooses the newest release in the channel and in the line
 ([Versions in devcontainer-core](https://github.com/majikmate/devcontainer-core#versions)).
 The `devcontainer.json` of an image can override the choice
@@ -84,9 +107,10 @@ The `devcontainer.json` of an image can override the choice
   `DENO_NO_UPDATE_CHECK=1` (Deno CLI and the language server in VS Code) and
   `NPM_CONFIG_UPDATE_NOTIFIER=false` (npm) as `containerEnv`.
 
-The sources and their rules are in `golang_versions.go`, `node_versions.go`
-and `deno_versions.go`; the general sources (GitHub releases, npm, Go module
-proxy, Go releases) are in `pkg/versions` of devcontainer-core.
+The sources and their rules are in [`golang/versions.go`](golang/versions.go),
+[`node/versions.go`](node/versions.go) and [`deno/versions.go`](deno/versions.go);
+the general sources (GitHub releases, npm, Go module proxy, Go releases) are
+in `pkg/versions` of devcontainer-core.
 
 ## Rules for a layer
 
@@ -104,9 +128,11 @@ proxy, Go releases) are in `pkg/versions` of devcontainer-core.
 
 ## Change a layer
 
-1. Add or change one file (the file registers the layer in its `init`
-   function). Open a pull request; CI checks the format, `go vet` and the
-   unit tests.
+1. Add or change one layer package (its file registers the layer in its
+   `init` function; the release choice is at the top of the file). A new
+   package is also added to the imports of [`doc.go`](doc.go) and to the
+   list in [`features_test.go`](features_test.go). Open a pull request; CI
+   checks the format, `go vet` and the unit tests.
 2. After the merge, the Release workflow creates the next version tag.
 3. devcontainer-core uses the new version in its nightly check (23:17 UTC) and
    releases; the other images follow.

@@ -1,4 +1,13 @@
-package features
+// Package deno is the layer deno: Deno, the JavaScript/TypeScript runtime
+// and language server, from the release archive on dl.deno.land, and the
+// VS Code extension for Deno.
+//
+// This file declares the layer and its installation; versions.go lists the
+// Deno releases, their channels and the end of life of a release line.
+// Importing the package registers the layer:
+//
+//	import _ "github.com/majikmate/devcontainer-features/deno"
+package deno
 
 import (
 	"fmt"
@@ -13,15 +22,26 @@ import (
 	"github.com/majikmate/devcontainer-core/pkg/sys"
 )
 
+// Release choice of the tool deno: the pinned release line and the release
+// channel (see layer.Config and versions.go). The feature installs the LTS
+// release (the one of "deno upgrade lts") of the major release 2; a newer
+// Deno major release ends the line and stops the release. The channel
+// "stable" would install the newest release of the line instead. The
+// devcontainer.json of an image can override both
+// ("customizations": {"devcon": {"deno": {"pin": "...", "channel": "..."}}}).
+const (
+	denoPin     = "2"
+	denoChannel = "lts"
+)
+
+// init registers the layer.
 func init() {
 	layer.Register(&layer.Layer{
 		Name:    "deno",
 		Summary: "Deno, the JavaScript/TypeScript runtime and language server",
 		Needs:   []string{"user"},
 		Tools: []layer.Tool{
-			// Deno: the LTS release (the one of "deno upgrade lts") of the
-			// line 2; a newer Deno major release stops the release
-			{Name: "deno", Arg: "DENO_VERSION", Source: denoSource, Version: layer.Config{Pin: "2", Channel: "lts"}},
+			{Name: "deno", Arg: "DENO_VERSION", Source: denoSource, Version: layer.Config{Pin: denoPin, Channel: denoChannel}},
 		},
 		Metadata: devcontainer.Entry{
 			// No upgrade message of the Deno CLI and of the language server in
@@ -35,7 +55,9 @@ func init() {
 				"deno.testing.args":      []string{"--allow-all", "--check=all"},
 			}),
 		},
-		Install: installDeno,
+		Install: install,
+		// Deno runs a TypeScript file with type check; the test records the
+		// version and the channel of the build
 		Test: func(t *layer.T) {
 			dir, cleanup, err := sys.TempDir()
 			if err == nil {
@@ -52,7 +74,10 @@ func init() {
 	})
 }
 
-func installDeno(e *layer.Env) error {
+// install downloads the release archive of the chosen version from
+// dl.deno.land, checks it against the published SHA-256 checksum and
+// installs the binary /usr/local/bin/deno.
+func install(e *layer.Env) error {
 	version, err := e.Version("deno")
 	if err != nil {
 		return err
