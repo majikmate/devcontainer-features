@@ -128,10 +128,24 @@ func TestReleaseChoiceConstants(t *testing.T) {
 // Features are distribution-independent: they must not use the Debian
 // package of the framework (apt). What a feature needs from the system, it
 // declares as a needed layer of devcontainer-core.
+//
+// The test checks the folders that the go command uses for packages: it
+// skips folders whose name starts with "." or "_" and folders named
+// "testdata", like the go command. So it does not check the checkout of the
+// tooling (.devcon) in the release workflow.
 func TestNoDistributionSpecificImports(t *testing.T) {
 	err := filepath.WalkDir(".", func(path string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".go") {
+		if err != nil {
 			return err
+		}
+		if d.IsDir() {
+			if name := d.Name(); path != "." && (strings.HasPrefix(name, ".") || strings.HasPrefix(name, "_") || name == "testdata") {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if !strings.HasSuffix(path, ".go") {
+			return nil
 		}
 		f, err := parser.ParseFile(token.NewFileSet(), path, nil, parser.ImportsOnly)
 		if err != nil {
