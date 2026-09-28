@@ -12,7 +12,7 @@ compiles them into the layer tool `devcon`; a Dockerfile installs a layer with
 devcontainer-features                                  Go library of layers, compiled into devcon
   ▼
 devcontainer-core:1                            23:17   Debian 13, devcon, user dev, zsh, SSH server
-├── devcontainer-base:2                        01:17   + go, build-tools, node, deno, prettier
+├── devcontainer-base:2                        01:17   + go, build-tools, node, deno, prettier, vscode-server
 │   ├── devcontainer-dev:2                     03:37   + github-cli
 │   ├── devcontainer-classroom-web:2           03:47   classroom settings, AI off
 │   └── devcontainer-classroom-web-advanced:2  03:57   + playwright-deps, AI on
@@ -44,6 +44,7 @@ holds the version source of the layer when it has its own.
 | `deno` | [`deno`](deno) | Deno | Deno releases and release files | user |
 | `prettier` | [`prettier`](prettier) | Prettier with the Tailwind CSS plugin, global configuration `/.prettierrc.json` | npm registry | node |
 | `github-cli` | [`githubcli`](githubcli) | GitHub CLI (`gh`) from the GitHub release archive | GitHub releases | — |
+| `vscode-server` | [`vscodeserver`](vscodeserver) | VS Code Server of the newest VS Code release in `~/.vscode-server` of the user: the Dev Containers extension starts it without a download | VS Code update service | user |
 
 The root package imports all layer packages, so
 `import _ "github.com/majikmate/devcontainer-features"` registers all layers
@@ -88,6 +89,7 @@ The `devcontainer.json` of an image can override the choice
 | `prettier`, `prettier-plugin-tailwindcss` | [`prettier/prettier.go`](prettier/prettier.go#L32-L37) | none | — | — | the newest release |
 | `gh` | [`githubcli/githubcli.go`](githubcli/githubcli.go#L30-L33) | none | — | — | the newest release |
 | `pure` | [`pureprompt/pureprompt.go`](pureprompt/pureprompt.go#L28-L31) | none | — | — | the newest release |
+| `vscode-server` | [`vscodeserver/vscodeserver.go`](vscodeserver/vscodeserver.go#L38-L41) | none | — | — | the newest VS Code release ([VS Code releases](https://code.visualstudio.com/updates)) |
 | gopls, dlv, staticcheck, govulncheck | [`golang/versions.go`](golang/versions.go) | no own pin | — | — | the newest release that works with the installed Go |
 
 The Debian release of the images (`debianPin`) is defined in
