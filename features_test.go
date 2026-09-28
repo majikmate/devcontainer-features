@@ -14,7 +14,9 @@ import (
 	"go/parser"
 	"go/token"
 	"io/fs"
+	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -165,5 +167,38 @@ func TestNoDistributionSpecificImports(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+// constantLink matches a README link to the release choice constants of a
+// layer file, with its line range, for example "](deno/deno.go#L36-L39)".
+var constantLink = regexp.MustCompile(`\]\(([a-z]+/[a-z]+\.go)#L([0-9]+)-L([0-9]+)\)`)
+
+// TestReadmeLinksToConstants: the README links to the pin and channel
+// constants of every layer with a line range; the range must still be the
+// const block with the constants. The READMEs of devcontainer-core and of the
+// images use the same ranges.
+func TestReadmeLinksToConstants(t *testing.T) {
+	readme, err := os.ReadFile("README.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	links := constantLink.FindAllStringSubmatch(string(readme), -1)
+	if len(links) == 0 {
+		t.Fatal("the README has no link to the constants of a layer")
+	}
+	for _, m := range links {
+		source, err := os.ReadFile(m[1])
+		if err != nil {
+			t.Errorf("README link %s: %v", m[0], err)
+			continue
+		}
+		lines := strings.Split(string(source), "\n")
+		from, _ := strconv.Atoi(m[2])
+		to, _ := strconv.Atoi(m[3])
+		if from < 1 || to > len(lines) || from >= to || lines[from-1] != "const (" || lines[to-1] != ")" ||
+			!strings.Contains(strings.Join(lines[from-1:to], "\n"), "Pin ") {
+			t.Errorf("README link %s does not point to the const block with the pin and channel constants", m[0])
+		}
 	}
 }

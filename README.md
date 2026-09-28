@@ -61,7 +61,7 @@ arguments, VS Code settings and tests of all layers:
 declares its source (`layer.Source`) and the release choice of the feature
 (`Tool.Version`: pinned line and channel). The release choice is a pair of
 constants at the top of the layer file, directly after the imports, for
-example in [`deno/deno.go`](deno/deno.go):
+example in [`deno/deno.go`](deno/deno.go#L36-L39):
 
 ```go
 const (
@@ -78,12 +78,20 @@ devcontainer-core chooses the newest release in the channel and in the line
 The `devcontainer.json` of an image can override the choice
 (`customizations.devcon.<tool>`); no image does this today.
 
-| Tool | Pin | Channel | End of life of the line | Source |
-| ---- | --- | ------- | ----------------------- | ------ |
-| `go` | `1.27` | — | when Go 1.(N+2) is released | [Go release policy](https://go.dev/doc/devel/release#policy) |
-| `node` | `24` | `lts` | on the end date of the line | [Node.js release schedule](https://github.com/nodejs/Release#release-schedule) |
-| `deno` | `2` | `lts` | when Deno publishes a newer major release | [Deno releases](https://github.com/denoland/deno/releases) |
-| all other tools | none | — | — | the newest release |
+| Tool | Defined in | Pin | Channel | End of life of the line | Source |
+| ---- | ---------- | --- | ------- | ----------------------- | ------ |
+| `go` | [`golang/golang.go`](golang/golang.go#L49-L54) | `1.27` | — | when Go 1.(N+2) is released | [Go release policy](https://go.dev/doc/devel/release#policy) |
+| `node` | [`node/node.go`](node/node.go#L39-L44) | `24` | `lts` | on the end date of the line | [Node.js release schedule](https://github.com/nodejs/Release#release-schedule) |
+| `deno` | [`deno/deno.go`](deno/deno.go#L36-L39) | `2` | `lts` | when Deno publishes a newer major release | [Deno releases](https://github.com/denoland/deno/releases) |
+| `golangci-lint` | [`golang/golang.go`](golang/golang.go#L49-L54) | none | — | — | the newest release |
+| `nvm` | [`node/node.go`](node/node.go#L39-L44) | none | — | — | the newest release |
+| `prettier`, `prettier-plugin-tailwindcss` | [`prettier/prettier.go`](prettier/prettier.go#L32-L37) | none | — | — | the newest release |
+| `gh` | [`githubcli/githubcli.go`](githubcli/githubcli.go#L30-L33) | none | — | — | the newest release |
+| `pure` | [`pureprompt/pureprompt.go`](pureprompt/pureprompt.go#L28-L31) | none | — | — | the newest release |
+| gopls, dlv, staticcheck, govulncheck | [`golang/versions.go`](golang/versions.go) | no own pin | — | — | the newest release that works with the installed Go |
+
+The Debian release of the images (`debianPin`) is defined in
+[`pkg/layers/os.go` of devcontainer-core](https://github.com/majikmate/devcontainer-core/blob/main/pkg/layers/os.go#L31-L34).
 
 - **Channels.** Node.js: `lts` (the releases of an LTS line) or `current`
   (all releases). Deno: `lts` or `stable` (all releases).
