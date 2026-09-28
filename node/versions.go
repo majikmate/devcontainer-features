@@ -1,4 +1,10 @@
-package features
+// This file lists the Node.js releases for the general version rule of
+// devcontainer-core: the release index, the channels "lts" and "current",
+// and the end of life of a release line (a Node.js major release) from the
+// release schedule. The release choice of the feature (pin and channel) is
+// at the top of node.go.
+
+package node
 
 import (
 	"encoding/json"
@@ -51,6 +57,7 @@ var nodeSource = &layer.Source{
 	},
 }
 
+// majorLine matches a Node.js release line: a major version, for example 24.
 var majorLine = regexp.MustCompile(`^[0-9]+$`)
 
 // parseNodeReleases reads the Node.js release list: every release is in the

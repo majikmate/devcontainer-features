@@ -1,4 +1,9 @@
-package features
+// This file lists the Deno releases for the general version rule of
+// devcontainer-core: the release tags, the channels "lts" and "stable", and
+// the end of life of a release line (a Deno major release). The release
+// choice of the feature (pin and channel) is at the top of deno.go.
+
+package deno
 
 import (
 	"fmt"
@@ -62,6 +67,9 @@ var denoSource = &layer.Source{
 		return denoSupport(latest, line)
 	},
 }
+
+// majorLine matches a Deno release line: a major version, for example 2.
+var majorLine = regexp.MustCompile(`^[0-9]+$`)
 
 // readLine reads a file with one line, for example "v2.9.3".
 func readLine(url string) (string, error) {

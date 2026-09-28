@@ -1,4 +1,10 @@
-package features
+// Package githubcli is the layer github-cli: the GitHub CLI (gh) and its
+// manual pages from the release archive of https://github.com/cli/cli.
+//
+// Importing the package registers the layer:
+//
+//	import _ "github.com/majikmate/devcontainer-features/githubcli"
+package githubcli
 
 import (
 	"fmt"
@@ -12,14 +18,26 @@ import (
 	"github.com/majikmate/devcontainer-core/pkg/versions"
 )
 
+// Release choice of the tool gh: the pinned release line and the release
+// channel (see layer.Config). An empty pin means no pin: the newest release.
+// An empty channel means the default channel of the source (GitHub releases
+// have no channels). The devcontainer.json of an image can override both
+// ("customizations": {"devcon": {"gh": {"pin": "...", "channel": "..."}}}).
+const (
+	ghPin     = ""
+	ghChannel = ""
+)
+
+// init registers the layer.
 func init() {
 	layer.Register(&layer.Layer{
 		Name:    "github-cli",
 		Summary: "GitHub CLI (gh) from the GitHub release archive",
 		Tools: []layer.Tool{
-			{Name: "gh", Arg: "GITHUB_CLI_VERSION", Source: versions.GitHubRepository("cli/cli")},
+			{Name: "gh", Arg: "GITHUB_CLI_VERSION", Source: versions.GitHubRepository("cli/cli"), Version: layer.Config{Pin: ghPin, Channel: ghChannel}},
 		},
-		Install: installGitHubCLI,
+		Install: install,
+		// gh runs; the test records its version
 		Test: func(t *layer.T) {
 			t.HasCommand("gh")
 			t.Version("gh", "v"+layer.FindVersion(t.Output("gh version", "gh", "--version"), `gh version ([0-9.]+)`))
@@ -27,9 +45,9 @@ func init() {
 	})
 }
 
-// installGitHubCLI installs gh and its manual pages from the release archive,
-// after checking the archive against the checksum file of the release.
-func installGitHubCLI(e *layer.Env) error {
+// install installs gh and its manual pages from the release archive, after
+// checking the archive against the checksum file of the release.
+func install(e *layer.Env) error {
 	version, err := e.Version("gh")
 	if err != nil {
 		return err

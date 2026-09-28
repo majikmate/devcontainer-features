@@ -1,4 +1,11 @@
-package features
+// Package aliases is the layer aliases: shell aliases for all users in bash
+// and zsh (ls, ll, grep, vs).
+//
+// The layer installs no tool, so it has no version, no pin and no channel.
+// Importing the package registers the layer:
+//
+//	import _ "github.com/majikmate/devcontainer-features/aliases"
+package aliases
 
 import (
 	"github.com/majikmate/devcontainer-core/pkg/layer"
@@ -11,14 +18,17 @@ alias ll='ls -lah --color=auto'
 alias grep='grep --color=auto'
 alias vs='code -r .'`
 
+// init registers the layer.
 func init() {
 	layer.Register(&layer.Layer{
 		Name:    "aliases",
 		Summary: "shell aliases: ls, ll, grep, vs",
 		Needs:   []string{"user"},
+		// The aliases are in the shared shell configuration of bash and zsh
 		Install: func(e *layer.Env) error {
 			return shellrc.Shared("aliases", aliases)
 		},
+		// Every alias exists in an interactive zsh and bash
 		Test: func(t *layer.T) {
 			for _, name := range []string{"ls", "ll", "grep", "vs"} {
 				t.Command("zsh alias "+name, "zsh", "-ic", "alias "+name)

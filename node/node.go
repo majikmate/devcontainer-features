@@ -1,4 +1,14 @@
-package features
+// Package node is the layer node: nvm, Node.js and npm. nvm installs
+// Node.js in /usr/local/share/nvm; the group nvm owns this folder, so the
+// development user can install other Node.js versions and global npm
+// packages.
+//
+// This file declares the layer and its installation; versions.go lists the
+// Node.js releases, their channels and the end of life of a release line.
+// Importing the package registers the layer:
+//
+//	import _ "github.com/majikmate/devcontainer-features/node"
+package node
 
 import (
 	"os"
@@ -13,6 +23,22 @@ import (
 	"github.com/majikmate/devcontainer-core/pkg/versions"
 )
 
+// Release choice of the tools nvm and node: the pinned release line and the
+// release channel (see layer.Config and versions.go). An empty pin means no
+// pin: the newest release. An empty channel means the default channel of the
+// source. Node.js: the LTS releases of the major release 24; the end date of
+// the line in the Node.js release schedule stops the release. nvm: the newest
+// release (GitHub releases have no channels). The devcontainer.json of an
+// image can override both, per tool
+// ("customizations": {"devcon": {"node": {"pin": "...", "channel": "..."}}},
+// the same for "nvm").
+const (
+	nodePin     = "24"
+	nodeChannel = "lts"
+	nvmPin      = ""
+	nvmChannel  = ""
+)
+
 // The nvm folder. The Dockerfile sets:
 //
 //	ENV NVM_DIR=/usr/local/share/nvm NVM_SYMLINK_CURRENT=true PATH=/usr/local/share/nvm/current/bin:$PATH
@@ -21,6 +47,7 @@ const nvmDir = "/usr/local/share/nvm"
 // The nvm files that a shell loads (nvm is a shell function).
 var nvmFiles = []string{"nvm.sh", "nvm-exec", "bash_completion"}
 
+// init registers the layer.
 func init() {
 	layer.Register(&layer.Layer{
 		Name:    "node",
@@ -28,17 +55,18 @@ func init() {
 		// build-tools (core): compilers for native npm modules (node-gyp)
 		Needs: []string{"user", "build-tools"},
 		Tools: []layer.Tool{
-			{Name: "nvm", Arg: "NVM_VERSION", Source: versions.GitHubRepository("nvm-sh/nvm")},
-			// Node.js: the LTS releases of the line 24; the end date of the
-			// line in the release schedule stops the release
-			{Name: "node", Arg: "NODE_VERSION", Source: nodeSource, Version: layer.Config{Pin: "24", Channel: "lts"}},
+			{Name: "nvm", Arg: "NVM_VERSION", Source: versions.GitHubRepository("nvm-sh/nvm"), Version: layer.Config{Pin: nvmPin, Channel: nvmChannel}},
+			{Name: "node", Arg: "NODE_VERSION", Source: nodeSource, Version: layer.Config{Pin: nodePin, Channel: nodeChannel}},
 		},
 		Metadata: devcontainer.Entry{
 			// No "new version of npm available" message: npm comes with the
 			// Node.js release of the image.
 			"containerEnv": map[string]any{"NPM_CONFIG_UPDATE_NOTIFIER": "false"},
 		},
-		Install: installNode,
+		Install: install,
+		// The commands exist, the development user can write to the nvm folder
+		// and nvm loads; the test records the versions and the channel of the
+		// installed Node.js release
 		Test: func(t *layer.T) {
 			for _, cmd := range []string{"node", "npm", "npx", "make", "g++", "python3"} {
 				t.HasCommand(cmd)
@@ -54,7 +82,9 @@ func init() {
 	})
 }
 
-func installNode(e *layer.Env) error {
+// install installs nvm (its shell files of the release tag), then Node.js
+// with nvm as the development user, and loads nvm in interactive shells.
+func install(e *layer.Env) error {
 	nvmVersion, err := e.Version("nvm")
 	if err != nil {
 		return err
