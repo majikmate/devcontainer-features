@@ -99,8 +99,12 @@ func init() {
 						"source.organizeImports": "explicit",
 					},
 				},
-				"[go.mod]": map[string]any{"editor.defaultFormatter": "golang.go"},
-				"[go.sum]": map[string]any{"editor.formatOnSave": false},
+				"[go.mod]": map[string]any{
+						"editor.defaultFormatter": "golang.go"
+					},
+				"[go.sum]": map[string]any{
+					"editor.formatOnSave": false}
+					,
 			}),
 		},
 		Install: installGo,
