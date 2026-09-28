@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// © 2026 Hannes Stauss (scalarion@nimblescape.com)
+// Licensed under the MIT License. See LICENSE in the repository root for details.
+
 // This file lists the Deno releases for the general version rule of
 // devcontainer-core: the release tags, the channels "lts" and "stable", and
 // the end of life of a release line (a Deno major release). The release

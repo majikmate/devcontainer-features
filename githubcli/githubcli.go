@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// © 2026 Hannes Stauss (scalarion@nimblescape.com)
+// Licensed under the MIT License. See LICENSE in the repository root for details.
+
 // Package githubcli is the layer github-cli: the GitHub CLI (gh) and its
 // manual pages from the release archive of https://github.com/cli/cli.
 //

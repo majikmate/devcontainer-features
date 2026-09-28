@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// © 2026 Hannes Stauss (scalarion@nimblescape.com)
+// Licensed under the MIT License. See LICENSE in the repository root for details.
+
 // Package node is the layer node: nvm, Node.js and npm. nvm installs
 // Node.js in /usr/local/share/nvm; the group nvm owns this folder, so the
 // development user can install other Node.js versions and global npm

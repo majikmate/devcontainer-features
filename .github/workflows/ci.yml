@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: MIT
+# © 2026 Hannes Stauss (scalarion@nimblescape.com)
+# Licensed under the MIT License. See LICENSE in the repository root for details.
+
 # Checks the features on every pull request and every push to main: format,
 # go vet and the unit tests (all features registered, no distribution-specific
 # imports). The features are installed and tested in the images: core builds
@@ -37,3 +41,17 @@ jobs:
 
       - name: Test
         run: go test ./...
+
+      # The license notices (root LICENSE, header of every authored file,
+      # footer of every Markdown document), checked with the release tool of
+      # devcontainer-core
+      - name: Check out the tooling
+        uses: actions/checkout@v7
+        with:
+          repository: majikmate/devcontainer-core
+          ref: main
+          path: .devcon
+          persist-credentials: false
+
+      - name: Check the license notices
+        run: go -C .devcon run ./cmd/devcon-release notices --dir "$GITHUB_WORKSPACE"

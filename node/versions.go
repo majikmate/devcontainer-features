@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// © 2026 Hannes Stauss (scalarion@nimblescape.com)
+// Licensed under the MIT License. See LICENSE in the repository root for details.
+
 // This file lists the Node.js releases for the general version rule of
 // devcontainer-core: the release index, the channels "lts" and "current",
 // and the end of life of a release line (a Node.js major release) from the

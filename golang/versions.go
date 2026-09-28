@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// © 2026 Hannes Stauss (scalarion@nimblescape.com)
+// Licensed under the MIT License. See LICENSE in the repository root for details.
+
 // This file has the version rule of the Go tools that follow the installed
 // Go version (gopls, dlv, staticcheck, govulncheck). The Go release lines and
 // their end of life are general (versions.GoReleases of devcontainer-core):

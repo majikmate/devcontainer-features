@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// © 2026 Hannes Stauss (scalarion@nimblescape.com)
+// Licensed under the MIT License. See LICENSE in the repository root for details.
+
 // Package golang is the layer go: Go from go.dev, the Go tools gopls, dlv,
 // staticcheck and govulncheck (built with "go install"), golangci-lint from
 // its release archive, and the VS Code extension for Go. The group golang
@@ -100,11 +104,11 @@ func init() {
 					},
 				},
 				"[go.mod]": map[string]any{
-						"editor.defaultFormatter": "golang.go"
-					},
+					"editor.defaultFormatter": "golang.go",
+				},
 				"[go.sum]": map[string]any{
-					"editor.formatOnSave": false}
-					,
+					"editor.formatOnSave": false,
+				},
 			}),
 		},
 		Install: installGo,

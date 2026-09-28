@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// © 2026 Hannes Stauss (scalarion@nimblescape.com)
+// Licensed under the MIT License. See LICENSE in the repository root for details.
+
 // Package deno is the layer deno: Deno, the JavaScript/TypeScript runtime
 // and language server, from the release archive on dl.deno.land, and the
 // VS Code extension for Deno.
