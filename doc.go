@@ -7,7 +7,7 @@
 // needs from the system, it declares as a needed layer of devcontainer-core
 // (for example node needs build-tools). The framework (layer definition,
 // helpers, VS Code metadata) is in devcontainer-core; devcontainer-core also
-// builds the program devenv with these features.
+// builds the program devcon with these features.
 //
 // Each file registers one layer in its init function; importing the package
 // registers all of them:
