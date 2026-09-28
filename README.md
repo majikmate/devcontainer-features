@@ -11,12 +11,12 @@ compiles them into the layer tool `devcon`; a Dockerfile installs a layer with
                                                Nightly Content
 devcontainer-features                                  Go library of layers, compiled into devcon
   ▼
-devcontainer-core:1                            23:17   Debian 13, devcon, user dev, zsh, SSH server
-├── devcontainer-base:2                        01:17   + go, build-tools, node, deno, prettier, vscode-server
-│   ├── devcontainer-dev:2                     03:37   + github-cli
-│   ├── devcontainer-classroom-web:2           03:47   classroom settings, AI off
-│   └── devcontainer-classroom-web-advanced:2  03:57   + playwright-deps, AI on
-└── devcontainer-classroom-exam-ts:2           01:27   + deno, AI and coding assistance off
+devcontainer-core:1                            22:17   Debian 13, devcon, user dev, zsh, SSH server
+├── devcontainer-base:2                        23:17   + go, build-tools, node, deno, prettier, vscode-server
+│   ├── devcontainer-dev:2                     23:57   + github-cli
+│   ├── devcontainer-classroom-web:2           00:07   classroom settings, AI off
+│   └── devcontainer-classroom-web-advanced:2  00:17   + playwright-deps, AI on
+└── devcontainer-classroom-exam-ts:2           23:47   + deno, AI and coding assistance off
 ```
 
 This repository: **devcontainer-features**. Nightly checks in UTC.
@@ -144,7 +144,7 @@ in `pkg/versions` of devcontainer-core.
    list in [`features_test.go`](features_test.go). Open a pull request; CI
    checks the format, `go vet` and the unit tests.
 2. After the merge, the Release workflow creates the next version tag.
-3. devcontainer-core uses the new version in its nightly check (23:17 UTC) and
+3. devcontainer-core uses the new version in its nightly check (22:17 UTC) and
    releases; the other images follow.
 4. To use a new layer in an image, add `RUN devcon install <layer>` to its
    Dockerfile.
