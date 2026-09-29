@@ -2,17 +2,25 @@
 // © 2026 Hannes Stauss (scalarion@nimblescape.com)
 // Licensed under the MIT License. See LICENSE in the repository root for details.
 
-// Package vscodeserver is the layer vscode-server: the VS Code Server of a
-// VS Code release, installed in the image for the development user. The Dev
-// Containers extension of a VS Code with the same release (commit) finds the
-// server in the image and starts it without a download, so a new container
-// is ready sooner.
+// Package vscodeserver keeps the VS Code Servers of the newest VS Code
+// releases in a folder outside the images. It is not a layer: no image
+// contains a VS Code Server.
 //
-// This file declares the layer and its installation; versions.go lists the
-// VS Code releases and reads the download data of a release. Importing the
-// package registers the layer:
+// The monitor on a remote VM runs Sync (command "devcon vscode-server sync")
+// on a schedule and keeps the servers in a Docker volume; the remote build
+// mounts this volume into the containers. The Dev Containers extension of a
+// VS Code with one of these releases then finds its server and starts it
+// without a download. Any other release is downloaded by the extension as
+// usual.
 //
-//	import _ "github.com/majikmate/devcontainer-features/vscodeserver"
+// Layout of the folder (the same as in ~/.vscode-server, so the folder can be
+// linked or mounted there):
+//
+//	bin/<commit>/                        the server of one release
+//	cli/servers/Stable-<commit>/server   link to bin/<commit> (newer layout)
+//
+// This file holds Sync and the folder handling; versions.go lists the VS Code
+// releases and reads the download data of a release.
 package vscodeserver
 
 import (
@@ -21,45 +29,21 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"syscall"
 
-	"github.com/majikmate/devcontainer-core/pkg/layer"
-	"github.com/majikmate/devcontainer-core/pkg/state"
 	"github.com/majikmate/devcontainer-core/pkg/sys"
 )
 
-// Release choice of the tool vscode-server: the pinned release line and the
-// release channel (see layer.Config). An empty pin means no pin: the newest
-// VS Code release, which matches the VS Code of most users. An empty channel
-// means the default channel of the source (the VS Code releases have no
-// channels here: only stable releases). The devcontainer.json of an image can
-// override both
-// ("customizations": {"devcon": {"vscode-server": {"pin": "...", "channel": "..."}}}).
-const (
-	vscodeServerPin     = ""
-	vscodeServerChannel = ""
-)
+// DefaultKeep is the number of VS Code releases whose servers Sync keeps:
+// the newest release of each of the three newest minor versions (for
+// example 1.139.1, 1.138.2 and 1.137.0).
+const DefaultKeep = 3
 
-// serverDir is the folder of the servers in the home folder of the user; the
-// Dev Containers extension installs a server in serverDir/bin/<commit>.
-const serverDir = ".vscode-server"
-
-// init registers the layer.
-func init() {
-	layer.Register(&layer.Layer{
-		Name:    "vscode-server",
-		Summary: "VS Code Server of the newest VS Code release, ready for the Dev Containers extension",
-		Needs:   []string{"user"},
-		Tools: []layer.Tool{
-			{Name: "vscode-server", Arg: "VSCODE_SERVER_VERSION", Source: vscodeSource, Version: layer.Config{Pin: vscodeServerPin, Channel: vscodeServerChannel}},
-		},
-		Install: install,
-		Test:    test,
-	})
-}
+// tempPrefix starts the name of the temporary folders of Sync in the folder;
+// a server becomes visible only by the rename of its complete folder.
+const tempPrefix = ".sync-"
 
 // platform returns the platform name of the VS Code Server downloads for the
-// architecture of the image.
+// architecture of this machine.
 func platform() (string, error) {
 	switch runtime.GOARCH {
 	case "amd64":
@@ -70,43 +54,66 @@ func platform() (string, error) {
 	return "", fmt.Errorf("vscode-server: unsupported architecture %s", runtime.GOARCH)
 }
 
-// install downloads the server archive of the chosen VS Code release, checks
-// it against the SHA-256 checksum of the update service and unpacks it into
-// ~/.vscode-server/bin/<commit> of the development user. The same server is
-// also linked at ~/.vscode-server/cli/servers/Stable-<commit>/server, the
-// folder of the newer server layout.
-func install(e *layer.Env) error {
-	version, err := e.Version("vscode-server")
-	if err != nil {
-		return err
+// Sync makes dir hold the servers of the newest release of each of the keep
+// newest VS Code minor versions: it downloads the missing servers (with a
+// check of the SHA-256 checksum of the update service) and deletes all other
+// servers in dir.
+func Sync(dir string, keep int) error {
+	if keep < 1 {
+		return fmt.Errorf("vscode-server: keep at least one release (keep=%d)", keep)
 	}
 	name, err := platform()
 	if err != nil {
 		return err
 	}
-	build, err := releaseBuild(version, name)
+	all, err := releases()
 	if err != nil {
 		return err
 	}
-	u, err := sys.LookupUser(state.User())
-	if err != nil {
+	versions := newestPerMinor(all, keep)
+	if err := os.MkdirAll(filepath.Join(dir, "bin"), 0o755); err != nil {
 		return err
 	}
-	dir, cleanup, err := sys.TempDir()
-	if err != nil {
+	if err := removeTemp(dir); err != nil {
 		return err
 	}
-	defer cleanup()
+	wanted := map[string]bool{}
+	for _, version := range versions {
+		build, err := releaseBuild(version, name)
+		if err != nil {
+			return err
+		}
+		wanted[build.Commit] = true
+		if exists(filepath.Join(dir, "bin", build.Commit)) {
+			sys.Logf("VS Code Server %s (commit %s): present", build.ProductVersion, build.Commit)
+		} else if err := install(dir, build); err != nil {
+			return err
+		}
+		if err := link(dir, build.Commit); err != nil {
+			return err
+		}
+	}
+	return prune(dir, wanted)
+}
 
-	sys.Logf("Installing VS Code Server %s (commit %s)", build.ProductVersion, build.Commit)
-	archive := filepath.Join(dir, "vscode-server.tar.gz")
-	if err := sys.Download(build.URL, archive); err != nil {
+// install downloads the server archive of one release, checks it and moves
+// the unpacked server to dir/bin/<commit>.
+func install(dir string, b build) error {
+	temp, err := os.MkdirTemp(dir, tempPrefix)
+	if err != nil {
 		return err
 	}
-	if err := sys.VerifySHA256(archive, build.SHA256); err != nil {
+	defer os.RemoveAll(temp)
+
+	sys.Logf("VS Code Server %s (commit %s): download", b.ProductVersion, b.Commit)
+	archive := filepath.Join(temp, "vscode-server.tar.gz")
+	if err := sys.Download(b.URL, archive); err != nil {
 		return err
 	}
-	unpacked := filepath.Join(dir, "unpacked")
+	if err := sys.VerifySHA256(archive, b.SHA256); err != nil {
+		return err
+	}
+	unpacked := filepath.Join(temp, "unpacked")
 	if err := sys.ExtractTarGz(archive, unpacked); err != nil {
 		return err
 	}
@@ -116,54 +123,79 @@ func install(e *layer.Env) error {
 		return err
 	}
 	if len(entries) != 1 || !entries[0].IsDir() {
-		return fmt.Errorf("vscode-server: the archive must have one top folder")
+		return fmt.Errorf("vscode-server %s: the archive must have one top folder", b.ProductVersion)
 	}
-
-	root := filepath.Join(u.Home, serverDir)
-	target := filepath.Join(root, "bin", build.Commit)
-	if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+	// The containers read the server as another user than the monitor
+	if err := os.Chmod(filepath.Join(unpacked, entries[0].Name()), 0o755); err != nil {
 		return err
 	}
-	if err := os.RemoveAll(target); err != nil {
-		return err
-	}
-	if err := os.Rename(filepath.Join(unpacked, entries[0].Name()), target); err != nil {
-		return err
-	}
-	link := filepath.Join(root, "cli", "servers", "Stable-"+build.Commit, "server")
-	if err := os.MkdirAll(filepath.Dir(link), 0o755); err != nil {
-		return err
-	}
-	if err := os.Symlink(target, link); err != nil && !os.IsExist(err) {
-		return err
-	}
-	return sys.ChownTree(root, u.UID, u.GID)
+	return os.Rename(filepath.Join(unpacked, entries[0].Name()), filepath.Join(dir, "bin", b.Commit))
 }
 
-// test checks that the server of one release is installed for the
-// development user, that it runs, and records its version.
-func test(t *layer.T) {
-	u, err := sys.LookupUser(state.User())
+// link creates dir/cli/servers/Stable-<commit>/server, a relative link to
+// dir/bin/<commit>, so the link also works where the folder is mounted.
+func link(dir, commit string) error {
+	path := filepath.Join(dir, "cli", "servers", "Stable-"+commit, "server")
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
+	target := filepath.Join("..", "..", "..", "bin", commit)
+	if current, err := os.Readlink(path); err == nil && current == target {
+		return nil
+	}
+	_ = os.Remove(path)
+	return os.Symlink(target, path)
+}
+
+// prune deletes the servers and links in dir whose commit is not wanted.
+func prune(dir string, wanted map[string]bool) error {
+	servers, err := os.ReadDir(filepath.Join(dir, "bin"))
 	if err != nil {
-		t.Check("development user exists", false)
-		return
+		return err
 	}
-	servers, _ := filepath.Glob(filepath.Join(u.Home, serverDir, "bin", "*", "bin", "code-server"))
-	t.Check("one VS Code Server in ~/"+serverDir+"/bin", len(servers) == 1)
-	if len(servers) != 1 {
-		return
+	for _, e := range servers {
+		if !wanted[e.Name()] {
+			sys.Logf("VS Code Server commit %s: delete", e.Name())
+			if err := os.RemoveAll(filepath.Join(dir, "bin", e.Name())); err != nil {
+				return err
+			}
+		}
 	}
-	info, err := os.Stat(servers[0])
-	t.Check("the development user owns the server", err == nil && ownerUID(info) == u.UID)
-	// "code-server --version" prints the version, the commit and the architecture
-	out := t.Output("VS Code Server runs", servers[0], "--version")
-	t.Version("vscode-server", strings.TrimSpace(strings.SplitN(out, "\n", 2)[0]))
+	links, err := os.ReadDir(filepath.Join(dir, "cli", "servers"))
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	for _, e := range links {
+		if !wanted[strings.TrimPrefix(e.Name(), "Stable-")] {
+			if err := os.RemoveAll(filepath.Join(dir, "cli", "servers", e.Name())); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
-// ownerUID returns the user ID of the owner of a file (-1 when unknown).
-func ownerUID(info os.FileInfo) int {
-	if st, ok := info.Sys().(*syscall.Stat_t); ok {
-		return int(st.Uid)
+// removeTemp deletes the temporary folders of an interrupted Sync.
+func removeTemp(dir string) error {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return err
 	}
-	return -1
+	for _, e := range entries {
+		if strings.HasPrefix(e.Name(), tempPrefix) {
+			if err := os.RemoveAll(filepath.Join(dir, e.Name())); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// exists reports whether path exists.
+func exists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }

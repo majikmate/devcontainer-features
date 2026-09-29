@@ -12,7 +12,7 @@ compiles them into the layer tool `devcon`; a Dockerfile installs a layer with
 devcontainer-features                                  Go library of layers, compiled into devcon
   ▼
 devcontainer-core:1                            22:17   Debian 13, devcon, user dev, zsh, SSH server
-├── devcontainer-base:2                        23:17   + go, build-tools, node, deno, prettier, vscode-server
+├── devcontainer-base:2                        23:17   + go, build-tools, node, deno, prettier
 │   ├── devcontainer-dev:2                     23:57   + github-cli
 │   ├── devcontainer-classroom-web:2           00:07   classroom settings, AI off
 │   └── devcontainer-classroom-web-advanced:2  00:17   + playwright-deps, AI on
@@ -44,7 +44,6 @@ holds the version source of the layer when it has its own.
 | `deno` | [`deno`](deno) | Deno | Deno releases and release files | user |
 | `prettier` | [`prettier`](prettier) | Prettier with the Tailwind CSS plugin, global configuration `/.prettierrc.json` | npm registry | node |
 | `github-cli` | [`githubcli`](githubcli) | GitHub CLI (`gh`) from the GitHub release archive | GitHub releases | — |
-| `vscode-server` | [`vscodeserver`](vscodeserver) | VS Code Server of the newest VS Code release in `~/.vscode-server` of the user: the Dev Containers extension starts it without a download | VS Code update service | user |
 
 The root package imports all layer packages, so
 `import _ "github.com/majikmate/devcontainer-features"` registers all layers
@@ -89,7 +88,6 @@ The `devcontainer.json` of an image can override the choice
 | `prettier`, `prettier-plugin-tailwindcss` | [`prettier/prettier.go`](prettier/prettier.go#L32-L37) | none | — | — | the newest release |
 | `gh` | [`githubcli/githubcli.go`](githubcli/githubcli.go#L30-L33) | none | — | — | the newest release |
 | `pure` | [`pureprompt/pureprompt.go`](pureprompt/pureprompt.go#L28-L31) | none | — | — | the newest release |
-| `vscode-server` | [`vscodeserver/vscodeserver.go`](vscodeserver/vscodeserver.go#L38-L41) | none | — | — | the newest VS Code release ([VS Code releases](https://code.visualstudio.com/updates)) |
 | gopls, dlv, staticcheck, govulncheck | [`golang/versions.go`](golang/versions.go) | no own pin | — | — | the newest release that works with the installed Go |
 
 The Debian release of the images (`debianPin`) is defined in
@@ -121,6 +119,31 @@ The sources and their rules are in [`golang/versions.go`](golang/versions.go),
 [`node/versions.go`](node/versions.go) and [`deno/versions.go`](deno/versions.go);
 the general sources (GitHub releases, npm, Go module proxy, Go releases) are
 in `pkg/versions` of devcontainer-core.
+
+## VS Code Server outside the images
+
+No image contains a VS Code Server (one server adds about 219 MB to an
+image). Instead, the package [`vscodeserver`](vscodeserver) (not a layer)
+keeps the servers in a folder outside the images:
+
+- The **monitor on the remote VM** runs `devcon vscode-server sync` on a
+  schedule, into a Docker volume:
+  ```
+  docker run --rm -v devcon-vscode-server:/srv/vscode-server \
+    ghcr.io/majikmate/devcontainer-core:1 \
+    devcon vscode-server sync --dir /srv/vscode-server --keep 3
+  ```
+- `sync` keeps the newest release of each of the three newest VS Code minor
+  versions (for example 1.139.1, 1.138.2, 1.137.0). It downloads a missing
+  server from the VS Code update service, checks the SHA-256 checksum,
+  unpacks it into a temporary folder and renames it when it is complete. It
+  deletes all other servers.
+- The folder has the layout of `~/.vscode-server`: `bin/<commit>` and
+  `cli/servers/Stable-<commit>/server` (a relative link to `bin/<commit>`).
+- The **remote build** mounts the volume into the containers, read-only. A
+  VS Code of another release downloads its server as usual.
+- A server that `sync` deletes can still be in use by a running container,
+  which can then fail. Run `sync` at night.
 
 ## Rules for a layer
 

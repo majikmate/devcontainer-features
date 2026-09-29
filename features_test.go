@@ -26,15 +26,14 @@ import (
 
 // The layers of this repository and the folder of their package.
 var packages = map[string]string{
-	"aliases":       "aliases",
-	"deno":          "deno",
-	"git":           "git",
-	"github-cli":    "githubcli",
-	"go":            "golang",
-	"node":          "node",
-	"prettier":      "prettier",
-	"pure-prompt":   "pureprompt",
-	"vscode-server": "vscodeserver",
+	"aliases":     "aliases",
+	"deno":        "deno",
+	"git":         "git",
+	"github-cli":  "githubcli",
+	"go":          "golang",
+	"node":        "node",
+	"prettier":    "prettier",
+	"pure-prompt": "pureprompt",
 }
 
 func TestAllFeaturesRegistered(t *testing.T) {

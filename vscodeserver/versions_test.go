@@ -2,8 +2,8 @@
 // © 2026 Hannes Stauss (scalarion@nimblescape.com)
 // Licensed under the MIT License. See LICENSE in the repository root for details.
 
-// Tests of the VS Code release source (versions.go) and of the declaration
-// of the layer vscode-server, with example answers of the update service.
+// Tests of the release list, the choice of the releases and the answers of
+// the update service (versions.go), with example answers.
 
 package vscodeserver
 
@@ -11,18 +11,12 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-
-	"github.com/majikmate/devcontainer-core/pkg/layer"
 )
 
 func TestParseReleases(t *testing.T) {
-	releases, err := parseReleases([]byte(`["1.105.1","1.105.0","1.104.3-insider","1.104.2"]`))
+	got, err := parseReleases([]byte(`["1.105.1","1.105.0","1.104.3-insider","1.104.2"]`))
 	if err != nil {
 		t.Fatal(err)
-	}
-	var got []string
-	for _, r := range releases {
-		got = append(got, r.Version)
 	}
 	if want := []string{"1.105.1", "1.105.0", "1.104.2"}; !reflect.DeepEqual(got, want) {
 		t.Errorf("releases = %v, want %v", got, want)
@@ -35,20 +29,18 @@ func TestParseReleases(t *testing.T) {
 	}
 }
 
-// TestResolve: without pin and channel, the general rule chooses the newest
-// release.
-func TestResolve(t *testing.T) {
-	s := *vscodeSource
-	s.Releases = func() ([]layer.Release, error) {
-		return []layer.Release{{Version: "1.105.1"}, {Version: "1.105.0"}, {Version: "1.104.2"}}, nil
+// TestNewestPerMinor: the newest patch release of each minor version, at
+// most keep releases.
+func TestNewestPerMinor(t *testing.T) {
+	releases := []string{"1.139.1", "1.139.0", "1.138.2", "1.138.1", "1.138.0", "1.137.0", "1.136.3"}
+	if got, want := newestPerMinor(releases, 3), []string{"1.139.1", "1.138.2", "1.137.0"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("keep 3 = %v, want %v", got, want)
 	}
-	tool := layer.Tool{Name: "vscode-server", Source: &s}
-	c, err := tool.Effective(layer.Config{Pin: vscodeServerPin, Channel: vscodeServerChannel})
-	if err != nil {
-		t.Fatal(err)
+	if got, want := newestPerMinor(releases, 1), []string{"1.139.1"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("keep 1 = %v, want %v", got, want)
 	}
-	if v, err := tool.Resolve(c, ""); err != nil || v != "1.105.1" {
-		t.Errorf("resolve = %q, %v, want 1.105.1", v, err)
+	if got := newestPerMinor(releases[:2], 3); !reflect.DeepEqual(got, []string{"1.139.1"}) {
+		t.Errorf("one minor version = %v", got)
 	}
 }
 
@@ -72,19 +64,8 @@ func TestParseBuild(t *testing.T) {
 	if _, err := parseBuild([]byte(strings.Replace(answer, sha, "", 1)), "1.105.1"); err == nil {
 		t.Error("no checksum: no error")
 	}
-	if _, err := parseBuild([]byte(strings.Replace(answer, commitID, "1.105.1", 1)), "1.105.1"); err == nil {
-		t.Error("no commit: no error")
-	}
-}
-
-// TestLayer: the layer is registered with the release choice constants.
-func TestLayer(t *testing.T) {
-	l, err := layer.Get("vscode-server")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(l.Tools) != 1 || l.Tools[0].Arg != "VSCODE_SERVER_VERSION" || l.Tools[0].Source != vscodeSource ||
-		l.Tools[0].Version != (layer.Config{Pin: vscodeServerPin, Channel: vscodeServerChannel}) {
-		t.Errorf("tools = %+v", l.Tools)
+	// The commit becomes a folder name: a path is not a commit
+	if _, err := parseBuild([]byte(strings.Replace(answer, commitID, "../../etc", 1)), "1.105.1"); err == nil {
+		t.Error("path as commit: no error")
 	}
 }
