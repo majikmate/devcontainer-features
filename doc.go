@@ -14,10 +14,6 @@
 //	prettier     the layer prettier: Prettier with the Tailwind CSS plugin
 //	pureprompt   the layer pure-prompt: the Pure prompt for zsh
 //
-// The package vscodeserver is not a layer: the monitor on a remote VM uses it
-// ("devcon vscode-server sync") to keep the VS Code Servers of the newest VS
-// Code releases in a volume outside the images.
-//
 // The release choice of a tool (pinned line and channel) is a pair of
 // constants at the top of the file of its layer, for example denoPin and
 // denoChannel in deno/deno.go.
