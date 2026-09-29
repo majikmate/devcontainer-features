@@ -2,11 +2,9 @@
 // © 2026 Hannes Stauss (scalarion@nimblescape.com)
 // Licensed under the MIT License. See LICENSE in the repository root for details.
 
-// This file lists the VS Code releases for the general version rule of
-// devcontainer-core and reads the download data of a release (archive URL,
-// SHA-256 checksum and commit) from the update service of VS Code. The
-// release choice of the feature (pin and channel) is at the top of
-// vscodeserver.go.
+// This file lists the stable VS Code releases, chooses the releases whose
+// servers Sync keeps, and reads the download data of a release (archive URL,
+// SHA-256 checksum and commit) from the update service of VS Code.
 
 package vscodeserver
 
@@ -14,27 +12,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"strings"
 
-	"github.com/majikmate/devcontainer-core/pkg/layer"
 	"github.com/majikmate/devcontainer-core/pkg/sys"
 )
 
 // updateService is the update service of VS Code.
 const updateService = "https://update.code.visualstudio.com"
 
-// vscodeSource lists the stable VS Code releases, newest first. A release
-// line is a VS Code minor release (for example 1.105); Microsoft supports
-// only the newest release, so the image follows it (empty pin).
-var vscodeSource = &layer.Source{
-	Name:   "VS Code releases (" + updateService + "/api/releases/stable)",
-	Policy: "only the newest VS Code release gets updates (https://code.visualstudio.com/docs/supporting/faq)",
-	Releases: func() ([]layer.Release, error) {
-		data, err := sys.Get(updateService + "/api/releases/stable")
-		if err != nil {
-			return nil, err
-		}
-		return parseReleases(data)
-	},
+// releases returns the stable VS Code releases, newest first.
+func releases() ([]string, error) {
+	data, err := sys.Get(updateService + "/api/releases/stable")
+	if err != nil {
+		return nil, err
+	}
+	return parseReleases(data)
 }
 
 // productVersion matches a VS Code release, for example 1.105.1.
@@ -42,21 +34,42 @@ var productVersion = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+$`)
 
 // parseReleases reads the answer of /api/releases/stable: a JSON list of
 // product versions, newest first, for example ["1.105.1", "1.105.0"].
-func parseReleases(data []byte) ([]layer.Release, error) {
+func parseReleases(data []byte) ([]string, error) {
 	var list []string
 	if err := json.Unmarshal(data, &list); err != nil {
 		return nil, fmt.Errorf("VS Code releases: %w", err)
 	}
-	var releases []layer.Release
+	var releases []string
 	for _, version := range list {
 		if productVersion.MatchString(version) {
-			releases = append(releases, layer.Release{Version: version})
+			releases = append(releases, version)
 		}
 	}
 	if len(releases) == 0 {
 		return nil, fmt.Errorf("VS Code releases: the list has no release")
 	}
 	return releases, nil
+}
+
+// newestPerMinor returns the newest release of each of the keep newest minor
+// versions, newest first. VS Code updates itself to the newest patch
+// release, so an older patch release of a minor version is rarely in use.
+// The releases are ordered newest first.
+func newestPerMinor(releases []string, keep int) []string {
+	var chosen []string
+	seen := map[string]bool{}
+	for _, version := range releases {
+		minor := version[:strings.LastIndex(version, ".")]
+		if seen[minor] {
+			continue
+		}
+		seen[minor] = true
+		chosen = append(chosen, version)
+		if len(chosen) == keep {
+			break
+		}
+	}
+	return chosen
 }
 
 // build is the download data of the VS Code Server of one release and
@@ -68,7 +81,8 @@ type build struct {
 	ProductVersion string `json:"productVersion"` // for example 1.105.1
 }
 
-// commit matches the commit of a VS Code release (40 hexadecimal digits).
+// commit matches the commit of a VS Code release (40 hexadecimal digits);
+// Sync uses it as a folder name.
 var commit = regexp.MustCompile(`^[0-9a-f]{40}$`)
 
 // parseBuild reads the answer of the update service for one release and
