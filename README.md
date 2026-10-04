@@ -44,6 +44,7 @@ holds the version source of the layer when it has its own.
 | `deno` | [`deno`](deno) | Deno | Deno releases and release files | user |
 | `prettier` | [`prettier`](prettier) | Prettier with the Tailwind CSS plugin, global configuration `/.prettierrc.json` | npm registry | node |
 | `github-cli` | [`githubcli`](githubcli) | GitHub CLI (`gh`) from the GitHub release archive | GitHub releases | — |
+| `html-validate` | [`htmlvalidate`](htmlvalidate) | VS Code extension HTML-validate (offline HTML5 validator), global configuration `/.htmlvalidate.json` that fits Prettier | — (the extension brings the validator) | os |
 
 The root package imports all layer packages, so
 `import _ "github.com/majikmate/devcontainer-features"` registers all layers
