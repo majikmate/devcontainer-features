@@ -10,6 +10,7 @@
 //	git          the layer git: system-wide git settings
 //	githubcli    the layer github-cli: GitHub CLI (gh)
 //	golang       the layer go: Go, the Go tools and golangci-lint
+//	htmlvalidate the layer html-validate: offline HTML5 validator for VS Code
 //	node         the layer node: nvm, Node.js and npm
 //	prettier     the layer prettier: Prettier with the Tailwind CSS plugin
 //	pureprompt   the layer pure-prompt: the Pure prompt for zsh
@@ -37,6 +38,7 @@ import (
 	_ "github.com/majikmate/devcontainer-features/git"
 	_ "github.com/majikmate/devcontainer-features/githubcli"
 	_ "github.com/majikmate/devcontainer-features/golang"
+	_ "github.com/majikmate/devcontainer-features/htmlvalidate"
 	_ "github.com/majikmate/devcontainer-features/node"
 	_ "github.com/majikmate/devcontainer-features/prettier"
 	_ "github.com/majikmate/devcontainer-features/pureprompt"
