@@ -6,4 +6,4 @@ module github.com/majikmate/devcontainer-features
 
 go 1.27
 
-require github.com/majikmate/devcontainer-core v1.0.14-0.20260927231001-c2a92e26a9e7
+require github.com/majikmate/devcontainer-core v1.0.30
