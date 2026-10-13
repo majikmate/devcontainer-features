@@ -61,7 +61,9 @@ func init() {
 		},
 		Install: install,
 		// Deno runs a TypeScript file with type check; the test records the
-		// version and the channel of the build
+		// version. The channel is not recorded: every Deno binary reports the
+		// channel "stable", also an LTS release. The release input
+		// channel/deno shows the channel.
 		Test: func(t *layer.T) {
 			dir, cleanup, err := sys.TempDir()
 			if err == nil {
@@ -72,8 +74,6 @@ func init() {
 			}
 			version := t.Output("deno version", "deno", "--version")
 			t.Version("deno", "v"+layer.FindVersion(version, `deno ([0-9.]+)`))
-			// The channel of the build, for example "long term support" or "stable"
-			t.Version("deno-channel", layer.FindVersion(version, `deno [0-9.]+ \(([^,]+),`))
 		},
 	})
 }

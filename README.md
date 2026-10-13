@@ -109,9 +109,10 @@ The Debian release of the images (`debianPin`) is defined in
 - **The Go tools follow Go.** gopls, dlv, staticcheck and govulncheck get the
   newest release whose `go.mod` accepts the installed Go version.
 - **Release notes.** They show `tool/<name>`, `pin/<name>` and
-  `channel/<name>`, and the installed `deno-channel` (from `deno --version`,
-  for example `long term support`) and `node-channel` (for example
-  `LTS Krypton`).
+  `channel/<name>`, and the installed `node-channel` (for example
+  `LTS Krypton`). Deno has no installed channel in the notes: every Deno
+  binary reports the channel `stable`, also an LTS release, so
+  `channel/deno` is the channel.
 - **No upgrade messages.** The feature decides the version, so the layers set
   `DENO_NO_UPDATE_CHECK=1` (Deno CLI and the language server in VS Code) and
   `NPM_CONFIG_UPDATE_NOTIFIER=false` (npm) as `containerEnv`.
