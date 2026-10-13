@@ -52,8 +52,12 @@ func init() {
 			// VS Code: the feature decides the Deno version (a new image
 			// brings the next release of the channel).
 			"containerEnv": map[string]any{"DENO_NO_UPDATE_CHECK": "1"},
+			// "deno.enable" is not set: the Deno extension turns itself on in a
+			// folder with a deno.json, and an image for Deno projects (for
+			// example classroom-exam-ts) sets it in its devcontainer.json.
+			// Turned on for all folders, it turns off the TypeScript features
+			// of VS Code in Node.js projects.
 			"customizations": devcontainer.VSCode([]string{"denoland.vscode-deno"}, map[string]any{
-				"deno.enable":            true,
 				"deno.codeLens.test":     true,
 				"deno.codeLens.testArgs": []string{"--allow-all", "--check=all"},
 				"deno.testing.args":      []string{"--allow-all", "--check=all"},
