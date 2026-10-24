@@ -152,7 +152,7 @@ in `pkg/versions` of devcontainer-core.
 ## Workflow runs
 
 Every Sunday, the workflow [Prune](.github/workflows/prune.yml) deletes the
-finished workflow runs (any result) older than 90 days. **Actions → Prune**
+finished workflow runs (any result) older than 30 days. **Actions → Prune**
 lists or deletes them at once; the scope `all-but-newest` keeps only the
 newest run of each workflow.
 
