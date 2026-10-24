@@ -7,7 +7,7 @@
 # https://github.com/majikmate/devcontainer-core/blob/main/.github/workflows/devcontainer-prune.yml
 #
 # Every Sunday it deletes the finished workflow runs (any result) older than
-# 90 days. A manual run lists (report) or deletes (apply) them; the scope
+# 30 days. A manual run lists (report) or deletes (apply) them; the scope
 # "all-but-newest" deletes every finished run except the newest run of each
 # workflow (a clean-up).
 name: Prune
@@ -23,7 +23,7 @@ on:
         options: [report, apply]
         default: report
       scope:
-        description: outdated (older than 90 days) or all-but-newest
+        description: outdated (older than 30 days) or all-but-newest
         type: choice
         options: [outdated, all-but-newest]
         default: outdated
