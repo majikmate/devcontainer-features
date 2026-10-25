@@ -12,11 +12,11 @@ compiles them into the layer tool `devcon`; a Dockerfile installs a layer with
 devcontainer-features                                  Go library of layers, compiled into devcon
   ▼
 devcontainer-core:1                            22:17   Debian 13, devcon, user dev, zsh, SSH server
-├── devcontainer-base:2                        23:17   + go, build-tools, node, deno, prettier
+├── devcontainer-base:2                        23:17   + go, build-tools, node, ts, deno, prettier
 │   ├── devcontainer-dev:2                     23:57   + github-cli
 │   ├── devcontainer-classroom-web:2           00:07   + html-validate, classroom settings, AI off
 │   └── devcontainer-classroom-web-advanced:2  00:17   + playwright-deps, html-validate, AI on
-└── devcontainer-classroom-exam-ts:2           23:47   + deno, AI and coding assistance off
+└── devcontainer-classroom-exam-ts:2           23:47   + build-tools, node, ts, deno, AI and coding assistance off
 ```
 
 This repository: **devcontainer-features**. Nightly checks in UTC.
@@ -45,6 +45,7 @@ holds the version source of the layer when it has its own.
 | `prettier` | [`prettier`](prettier) | Prettier with the Tailwind CSS plugin, global configuration `/.prettierrc.json` | npm registry | node |
 | `github-cli` | [`githubcli`](githubcli) | GitHub CLI (`gh`) from the GitHub release archive | GitHub releases | — |
 | `html-validate` | [`htmlvalidate`](htmlvalidate) | VS Code extension HTML-validate (offline HTML5 validator), global configuration `/.htmlvalidate.json` that fits Prettier | — (the extension brings the validator) | os |
+| `ts` | [`ts`](ts) | the command `ts` of [`@nimblescape/typescript`](https://www.npmjs.com/package/@nimblescape/typescript) (checks, compiles and runs TypeScript with tsc and Node.js) in `/usr/local`, its Tab completion for zsh and bash, VS Code extension [nimblescape TypeScript](https://marketplace.visualstudio.com/items?itemName=nimblescape.nimblescape-typescript) | npm registry | node |
 
 The root package imports all layer packages, so
 `import _ "github.com/majikmate/devcontainer-features"` registers all layers
@@ -88,6 +89,7 @@ The `devcontainer.json` of an image can override the choice
 | `nvm` | [`node/node.go`](node/node.go#L41-L46) | none | — | — | the newest release |
 | `prettier`, `prettier-plugin-tailwindcss` | [`prettier/prettier.go`](prettier/prettier.go#L32-L37) | none | — | — | the newest release |
 | `gh` | [`githubcli/githubcli.go`](githubcli/githubcli.go#L30-L33) | none | — | — | the newest release |
+| `nimblescape-typescript` | [`ts/ts.go`](ts/ts.go#L35-L38) | none | — | — | the newest release |
 | `pure` | [`pureprompt/pureprompt.go`](pureprompt/pureprompt.go#L28-L31) | none | — | — | the newest release |
 | gopls, dlv, staticcheck, govulncheck | [`golang/versions.go`](golang/versions.go) | no own pin | — | — | the newest release that works with the installed Go |
 
