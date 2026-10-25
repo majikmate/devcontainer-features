@@ -30,15 +30,17 @@ import (
 // Release choice of the tools nvm and node: the pinned release line and the
 // release channel (see layer.Config and versions.go). An empty pin means no
 // pin: the newest release. An empty channel means the default channel of the
-// source. Node.js: the LTS releases of the major release 24; the end date of
-// the line in the Node.js release schedule stops the release. nvm: the newest
+// source. Node.js: all releases of the major release 26 (channel current: the
+// line has its first LTS release on 2026-10-28; from then on every release of
+// the line is an LTS release); the end date of the line in the Node.js release
+// schedule stops the release. nvm: the newest
 // release (GitHub releases have no channels). The devcontainer.json of an
 // image can override both, per tool
 // ("customizations": {"devcon": {"node": {"pin": "...", "channel": "..."}}},
 // the same for "nvm").
 const (
-	nodePin     = "24"
-	nodeChannel = "lts"
+	nodePin     = "26"
+	nodeChannel = "current"
 	nvmPin      = ""
 	nvmChannel  = ""
 )
@@ -55,7 +57,7 @@ var nvmFiles = []string{"nvm.sh", "nvm-exec", "bash_completion"}
 func init() {
 	layer.Register(&layer.Layer{
 		Name:    "node",
-		Summary: "nvm, Node.js (the newest LTS release of the line 24) and npm",
+		Summary: "nvm, Node.js (the newest release of the line 26) and npm",
 		// build-tools (core): compilers for native npm modules (node-gyp)
 		Needs: []string{"user", "build-tools"},
 		Tools: []layer.Tool{

@@ -82,10 +82,10 @@ The `devcontainer.json` of an image can override the choice
 | Tool | Defined in | Pin | Channel | End of life of the line | Source |
 | ---- | ---------- | --- | ------- | ----------------------- | ------ |
 | `go` | [`golang/golang.go`](golang/golang.go#L49-L54) | `1.27` | — | when Go 1.(N+2) is released | [Go release policy](https://go.dev/doc/devel/release#policy) |
-| `node` | [`node/node.go`](node/node.go#L39-L44) | `24` | `lts` | on the end date of the line | [Node.js release schedule](https://github.com/nodejs/Release#release-schedule) |
+| `node` | [`node/node.go`](node/node.go#L41-L46) | `26` | `current` (until the first LTS release of the line on 2026-10-28) | on the end date of the line | [Node.js release schedule](https://github.com/nodejs/Release#release-schedule) |
 | `deno` | [`deno/deno.go`](deno/deno.go#L36-L39) | `2` | `lts` | when Deno publishes a newer major release | [Deno releases](https://github.com/denoland/deno/releases) |
 | `golangci-lint` | [`golang/golang.go`](golang/golang.go#L49-L54) | none | — | — | the newest release |
-| `nvm` | [`node/node.go`](node/node.go#L39-L44) | none | — | — | the newest release |
+| `nvm` | [`node/node.go`](node/node.go#L41-L46) | none | — | — | the newest release |
 | `prettier`, `prettier-plugin-tailwindcss` | [`prettier/prettier.go`](prettier/prettier.go#L32-L37) | none | — | — | the newest release |
 | `gh` | [`githubcli/githubcli.go`](githubcli/githubcli.go#L30-L33) | none | — | — | the newest release |
 | `pure` | [`pureprompt/pureprompt.go`](pureprompt/pureprompt.go#L28-L31) | none | — | — | the newest release |
