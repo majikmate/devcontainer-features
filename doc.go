@@ -14,6 +14,7 @@
 //	node         the layer node: nvm, Node.js and npm
 //	prettier     the layer prettier: Prettier with the Tailwind CSS plugin
 //	pureprompt   the layer pure-prompt: the Pure prompt for zsh
+//	ts           the layer ts: the command ts and the VS Code extension nimblescape TypeScript
 //
 // The release choice of a tool (pinned line and channel) is a pair of
 // constants at the top of the file of its layer, for example denoPin and
@@ -42,4 +43,5 @@ import (
 	_ "github.com/majikmate/devcontainer-features/node"
 	_ "github.com/majikmate/devcontainer-features/prettier"
 	_ "github.com/majikmate/devcontainer-features/pureprompt"
+	_ "github.com/majikmate/devcontainer-features/ts"
 )

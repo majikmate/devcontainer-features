@@ -35,6 +35,7 @@ var packages = map[string]string{
 	"prettier":      "prettier",
 	"pure-prompt":   "pureprompt",
 	"html-validate": "htmlvalidate",
+	"ts":            "ts",
 }
 
 func TestAllFeaturesRegistered(t *testing.T) {
