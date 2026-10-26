@@ -37,7 +37,7 @@ holds the version source of the layer when it has its own.
 | Layer | Package | Content | Version source | Needs |
 | ----- | ------- | ------- | -------------- | ----- |
 | `git` | [`git`](git) | system-wide git settings (rebase on pull, auto stash) | — | os |
-| `aliases` | [`aliases`](aliases) | shell aliases: ls, ll, grep, vs | — | user |
+| `aliases` | [`aliases`](aliases) | shell aliases: ls, ll, grep, vs; the function `code`, which opens a folder in the same window of VS Code | — | user |
 | `pure-prompt` | [`pureprompt`](pureprompt) | Pure prompt for zsh | GitHub releases | user |
 | `go` | [`golang`](golang) | Go, gopls, dlv, staticcheck, govulncheck, golangci-lint | Go: go.dev; Go tools: Go module proxy; golangci-lint: GitHub releases | user |
 | `node` | [`node`](node) | nvm, Node.js, npm | nvm: GitHub releases; Node.js: release index | user, build-tools |
