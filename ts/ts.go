@@ -93,7 +93,7 @@ func install(e *layer.Env) error {
 	}
 	_ = sys.Run(nil, "npm", "cache", "clean", "--force")
 	for shell, file := range map[string]string{"zsh": zshCompletion, "bash": bashCompletion} {
-		script, err := sys.Output(tsCommand, "--completion", shell)
+		script, err := sys.Output(tsCommand, "completion", shell)
 		if err != nil {
 			return err
 		}
