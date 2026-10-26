@@ -43,9 +43,13 @@ func init() {
 			{Name: "pure", Arg: "PURE_VERSION", Source: versions.GitHubRepository("sindresorhus/pure"), Version: layer.Config{Pin: purePin, Channel: pureChannel}},
 		},
 		Install: install,
-		// Pure is the active prompt of an interactive zsh
+		// Pure is the active prompt of an interactive zsh. The tests run in a
+		// container as the user of the image (not root, no SSH): the prompt
+		// shows no user@host, and CODESPACES stays unset after the setup.
 		Test: func(t *layer.T) {
 			t.Command("Pure prompt active in zsh", "zsh", "-ic", `[[ "$prompt_theme[1]" == pure ]]`)
+			t.Command("no user@host in the prompt in a container", "env", "-u", "CODESPACES", "-u", "SSH_CONNECTION", "zsh", "-ic", `[[ "$(print -P -- "$PROMPT")" != *"@${HOST%%.*}"* ]]`)
+			t.Command("CODESPACES unset after the prompt setup", "env", "-u", "CODESPACES", "zsh", "-ic", `[[ -z "${CODESPACES+set}" ]]`)
 			data, _ := os.ReadFile(filepath.Join(pureDir, "VERSION"))
 			t.Version("pure", string(data))
 		},
@@ -76,12 +80,16 @@ func install(e *layer.Env) error {
 	if err := sys.WriteFile(filepath.Join(pureDir, "VERSION"), version+"\n", 0o644); err != nil {
 		return err
 	}
-	// Pure default: user@host only over SSH, in a container outside of
-	// GitHub Codespaces, or as root.
+	// Pure shows user@host over SSH, as root, and in a container, but not in
+	// GitHub Codespaces (CODESPACES is set there). The image always runs as a
+	// container, in a Codespace or elsewhere (for example a devspace). With
+	// CODESPACES set for the setup, the prompt is the same everywhere:
+	// user@host only over SSH or as root. Pure reads CODESPACES only in its
+	// setup, and zsh sets the variable only during the call of prompt.
 	return shellrc.Zsh("prompt", `fpath+=("`+pureDir+`")
 autoload -Uz promptinit
 promptinit
 zstyle :prompt:pure:host show yes
 zstyle :prompt:pure:git:stash show yes
-prompt pure`)
+CODESPACES=${CODESPACES:-true} prompt pure`)
 }
