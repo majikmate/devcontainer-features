@@ -38,7 +38,7 @@ holds the version source of the layer when it has its own.
 | ----- | ------- | ------- | -------------- | ----- |
 | `git` | [`git`](git) | system-wide git settings (rebase on pull, auto stash) | — | os |
 | `aliases` | [`aliases`](aliases) | shell aliases: ls, ll, grep, vs | — | user |
-| `pure-prompt` | [`pureprompt`](pureprompt) | Pure prompt for zsh | GitHub releases | user |
+| `pure-prompt` | [`pureprompt`](pureprompt) | Pure prompt for zsh; `user@host` only over SSH or as root, the same as in GitHub Codespaces | GitHub releases | user |
 | `go` | [`golang`](golang) | Go, gopls, dlv, staticcheck, govulncheck, golangci-lint | Go: go.dev; Go tools: Go module proxy; golangci-lint: GitHub releases | user |
 | `node` | [`node`](node) | nvm, Node.js, npm | nvm: GitHub releases; Node.js: release index | user, build-tools |
 | `deno` | [`deno`](deno) | Deno | Deno releases and release files | user |
